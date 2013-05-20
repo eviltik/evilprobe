@@ -195,8 +195,12 @@ Workspace.ws.mines.exist = function(req,res,next) {
 
     log.debug('Workspace.ws.mines.exist '+JSON.stringify(req.body));
 
+    var name = req.body.workspaceName||'';
+    name = name.replace(/^ */,'');
+    name = name.replace(/ *$/,'');
+
     var o = {
-        name:req.body.workspaceName,
+        name:name,
         creator:req.session.user._id
     }
     Workspace.findOne(o,function(err,r) {
@@ -209,8 +213,20 @@ Workspace.ws.mines.create = function(req,res,next) {
 
     log.debug('Workspace.ws.mines.create '+JSON.stringify(req.body));
 
+    if (!req.body.workspaceName) {
+        return res.send({ok:false,error:'empty workspace name'});
+    }
+
+    var name = req.body.workspaceName;
+    name = name.replace(/^ */,'');
+    name = name.replace(/ *$/,'');
+
+    if (!name.length) {
+        return res.send({ok:false,error:'empty workspace name'});
+    }
+
     var w = new Workspace({
-        name:req.body.workspaceName,
+        name:name,
         tsOpened:Date.now(),
         tsCreated:Date.now(),
         creator:req.session.user._id

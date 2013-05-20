@@ -117,16 +117,20 @@ qx.Class.define("EP.desktop.workspaceNewPopup", {
             var c = this.__inputWorkspaceName.getValue();
             
             if (c) {
-                c = c.replace(/^ */,'').replace(/ *$/,'');
+                // Remove space at the beginning
+                c = c.replace(/^ */,'');
                 this.__inputWorkspaceName.setValue(c);
             }
 
             if (!c) {
+
                 this.__inputWorkspaceNameMessage.reset();                
                 this.__inputWorkspaceName.setValid(true);
                 this.__previousWorkspaceName='';
                 this.__buttonOk.setEnabled(false);
+
             } else if (this.__previousWorkspaceName!=c) {
+
                 this.__data.workspaceName = c;
                 this.__inputWorkspaceNameMessage.setLoading();
                 this.__buttonOk.setEnabled(false);                
