@@ -273,12 +273,21 @@ qx.Class.define("EP.desktop.portsScannerTree", {
             var selected = this.getSelection().getItem(0);
             var parentItem = selected||this.__root;
 
+            var defaultValue = 'New folder';
+
+            if (type == 'host') {
+                defaultValue = 'New host';
+            }
+            if (type == 'network') {
+                defaultValue = 'New network';
+            }
+
             var n = qx.data.marshal.Json.createModel({
-                "_id":null,
-                "name": "New folder",
-                "childs": [],
-                "type":type||'default',
-                "opened":true
+                _id:null,
+                name: defaultValue,
+                childs: [],
+                type:type||'default',
+                opened:true
             });
 
             var nodeId = parentItem.getChilds().push(n);
