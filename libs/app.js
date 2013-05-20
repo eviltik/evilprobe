@@ -1,3 +1,4 @@
+var log = require('./logger.js').log;
 var db = require('./db');
 var express = require('express');
 var bcrypt = require('bcrypt');
@@ -40,10 +41,12 @@ app.get('/',function(req,res,next) {
 */
 
 var User = db.model('User');
+var Workspace = db.model('Workspace');
+var Folder = db.model('Folder');
+
 app.post('/ws/auth/check',User.ws.check);
 app.post('/ws/auth/login',User.ws.login);
 
-var Workspace = db.model('Workspace');
 app.post('/ws/workspace/search',Workspace.ws.search);
 app.post('/ws/workspace/mines/exist',Workspace.ws.mines.exist);
 app.post('/ws/workspace/mines/create',Workspace.ws.mines.create);
@@ -51,13 +54,26 @@ app.post('/ws/workspace/mines/load',Workspace.ws.mines.load);
 app.post('/ws/workspace/mines/recent',Workspace.ws.mines.recent)
 app.post('/ws/workspace/mines/close',Workspace.ws.mines.close);
 app.post('/ws/workspace/mines/select',Workspace.ws.mines.select);
+app.post('/ws/workspace/mines/delete',function(req,res,next) {
 
-var Folder = db.model('Folder');
+    if (!req.body._id) {
+        return res.send({ok:false,error:'no workspace specified'});
+    }
+
+    Folder.do.dropWorkspace(req,req.body._id,function(err) {
+        Workspace.do.dropWorkspace(req,req.body._id,function(err) {
+            return res.send({ok:true});
+        });
+    });
+});
+
 app.all('/ws/folder/:workspaceId/load',Folder.ws.load);
 app.all('/ws/folder/:workspaceId/create',Folder.ws.create);
 app.all('/ws/folder/:workspaceId/update',Folder.ws.update);
 app.all('/ws/folder/:workspaceId/delete',Folder.ws.delete);
+app.all('/ws/folder/:workspaceId/deleteAll',Folder.ws.deleteAll);
 app.all('/ws/folder/:workspaceId/openClose',Folder.ws.openClose);
+
 
 var start = function() {
     if (global.bayeux) app.use(global.bayeux);

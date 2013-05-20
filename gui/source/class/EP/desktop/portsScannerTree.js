@@ -210,7 +210,10 @@ qx.Class.define("EP.desktop.portsScannerTree", {
 
         __onTreeContextMenu:function(ev) {
 
-            console.log("TODO: make menu depending on the clicked item");
+            var item = this.getSelection().getItem(0);
+            if (item) {
+                var type = item.getType();
+            }
 
             var contextMenu = new qx.ui.menu.Menu();
 
@@ -223,23 +226,18 @@ qx.Class.define("EP.desktop.portsScannerTree", {
             var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.gif');
             menuNewHost.addListener('execute',this.__onMenuNewHost,this);
 
-            var menuDelete = new qx.ui.menu.Button('Delete');
+            var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
+            menuEdit.addListener('execute',this.__nodeEdit,this);
+
+            var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
             menuDelete.addListener('execute',this.__onMenuDelete,this);
 
             contextMenu.add(menuNewFolder);
             contextMenu.add(menuNewNetwork);
             contextMenu.add(menuNewHost);
             contextMenu.add(new qx.ui.menu.Separator());
+            contextMenu.add(menuEdit);
             contextMenu.add(menuDelete);
-
-            var sn = this.getSelection();
-
-            if (sn && sn.length>1) {
-                // Multiple selection, disable everything
-                menuNewFolder.setEnabled(false);
-                menuNewNetwork.setEnabled(false);
-                menuNewHost.setEnabled(false);
-            }
 
             contextMenu.placeToMouse(ev);
             contextMenu.show();

@@ -6,7 +6,7 @@
     	jobMessage: "qx.event.type.Data"
     },
 
-    construct : function(workspaceData) {
+    construct : function(workspaceData,tabViewer) {
 
         this.base(arguments,workspaceData.name||'Empty title');
 
@@ -31,9 +31,48 @@
         this.add(menu);
         this.add(container,{flex:5});
 
+        this.__button = this.getChildControl('button');
+        this.__button.addListener('contextmenu',this.__onContextMenu,this);
+
+        this.__workspaceData = workspaceData;
+        this.__tabViewer = tabViewer;
+        
     },
 
     members : {
+        __onContextMenu:function(ev) {
+            var contextMenu = new qx.ui.menu.Menu();
 
+            //var menuRename = new qx.ui.menu.Button("Edit",'EP/rename.png');
+            //menuRename.addListener('execute',this.__onMenuRename,this);
+
+            var menuDelete = new qx.ui.menu.Button("Delete",'EP/delete.gif');
+            menuDelete.addListener('execute',this.__onMenuDelete,this);
+
+            //contextMenu.add(menuRename);
+            contextMenu.add(menuDelete);
+
+            contextMenu.placeToMouse(ev);
+            contextMenu.show();
+
+            contextMenu.addListenerOnce("disappear", function(e) {
+                contextMenu.getChildren().forEach(function(m) {
+                    m.dispose();
+                });
+                contextMenu.dispose();
+            });
+    
+            return true;
+        },
+
+        __onMenuDelete:function() {
+            new EP.utils.xhr('workspace/mines/delete',{_id:this.__workspaceData._id},function(err,r) {
+                this.dispose();
+            },this).send();  
+        },
+
+        __onMenuRename:function() {
+
+        }
     }
 });

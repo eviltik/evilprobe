@@ -36,7 +36,7 @@ qx.Class.define("EP.desktop.workspacesTabViewer", {
 
         __tabAdd:function(workspaceData,forceSelection) {
 
-            var page = new EP.desktop.portsScannerPage(workspaceData);
+            var page = new EP.desktop.portsScannerPage(workspaceData,this);
             page.set({
                 layout:new qx.ui.layout.VBox(5),
                 showCloseButton:true,

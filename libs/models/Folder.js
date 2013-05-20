@@ -98,7 +98,17 @@ Folder.do.delete = function(args,cb) {
     Folder.remove(filters,cb||function() {});
 }
 
+Folder.do.dropWorkspace = function(req,workspaceId,cb) {
 
+    log.debug('Folder.do.dropWorkspace '+workspaceId);
+
+    var filters = {
+        creator:req.session.user._id,
+        workspace:workspaceId
+    }
+
+    Folder.remove(filters,cb);
+}
 
 
 
@@ -198,6 +208,24 @@ Folder.ws.delete = function(req,res,next) {
     var args = {
         filters:{
             path:{$regex:req.body._id},
+            creator:req.session.user._id,
+            workspace:req.params.workspaceId
+        },
+        options:{
+            multi:true
+        }
+    };
+
+    Folder.do.delete(args,function(err,folders) {
+        return res.send(folders); 
+    })
+}
+
+Folder.ws.deleteAll = function(req,res,next) {
+    log.debug('Folder.ws.delete '+req.params.workspaceId+'/'+JSON.stringify(req.body));
+
+    var args = {
+        filters:{
             creator:req.session.user._id,
             workspace:req.params.workspaceId
         },

@@ -22,7 +22,11 @@ schema.index({opened:1,name:1,tsOpened:1})
 /* model */
 var Workspace = mongoose.model('Workspace',schema);
 
-Workspace.doLoad = function(args,cb) {
+Workspace.ws = {};
+Workspace.ws.mines = {};
+Workspace.do = {};
+
+Workspace.do.load = function(args,cb) {
     var filters = args.filters||{};
     var columns = args.columns||'_id';
     var options = args.options||{};
@@ -53,7 +57,7 @@ Workspace.doLoad = function(args,cb) {
                             multi:true
                         }
                     }
-                    Workspace.doUpdate(wargs);
+                    Workspace.do.update(wargs);
                 }
 
                 ws.push(w);
@@ -73,7 +77,7 @@ Workspace.doLoad = function(args,cb) {
     }
 }
 
-Workspace.doUpdate = function(args,cb) {
+Workspace.do.update = function(args,cb) {
     var filters = args.filters||{};
     if (!args.fields) return cb('No fields specified');
     var fields = args.fields;
@@ -82,8 +86,23 @@ Workspace.doUpdate = function(args,cb) {
     Workspace.update(filters,fields,options,cb||function() {});
 }
 
-Workspace.ws = {};
-Workspace.ws.mines = {};
+Workspace.do.delete = function(args,cb) {
+    var filters = args.filters||{};
+    Workspace.remove(filters,cb||function() {});
+}
+
+Workspace.do.dropWorkspace = function(req,workspaceId,cb) {
+
+    log.debug('Workspace.do.dropWorkspace '+workspaceId);
+
+    var filters = {
+        creator:req.session.user._id,
+        _id:workspaceId
+    }
+
+    Workspace.remove(filters,cb||function() {});
+}
+
 
 Workspace.ws.mines.load = function(req,res,next) {
     log.debug('Workspace.ws.mines.load '+JSON.stringify(req.body));
@@ -113,7 +132,7 @@ Workspace.ws.mines.load = function(req,res,next) {
         args.filters.opened = true;
     }
 
-    Workspace.doLoad(args,function(err,ws) {
+    Workspace.do.load(args,function(err,ws) {
         return res.send({ok:true,workspaces:ws});
     })
 }
@@ -133,7 +152,7 @@ Workspace.ws.mines.recent = function(req,res,next) {
         }
     };
 
-    Workspace.doLoad(args,function(err,ws) {
+    Workspace.do.load(args,function(err,ws) {
         return res.send({ok:true,workspaces:ws});
     })
 }
@@ -157,7 +176,7 @@ Workspace.ws.mines.select = function(req,res,next) {
             multi:true
         }
     }
-    Workspace.doUpdate(args,function(err) {
+    Workspace.do.update(args,function(err) {
         if (err) return req.send({ok:false,error:err});
 
         args.filters._id = req.body.selectId;
@@ -165,7 +184,7 @@ Workspace.ws.mines.select = function(req,res,next) {
         args.fields.opened = true;
         delete args.options;
 
-        Workspace.doUpdate(args,function(err) {
+        Workspace.do.update(args,function(err) {
             if (err) return req.send({ok:false,error:err});
             return res.send({ok:true});
         })
@@ -221,9 +240,32 @@ Workspace.ws.mines.close = function(req,res,next) {
             tsClosed:Date.now()
         }
     }
-    Workspace.doUpdate(args,function(err) {
+    Workspace.do.update(args,function(err) {
         return res.send({ok:true});
     });
+}
+
+Workspace.ws.mines.delete = function(req,res,next) {
+
+    log.debug('Folder.ws.mines.delete '+JSON.stringify(req.body));
+
+    if (!req.body._id) {
+        return res.send({ok:false,error:'no workspace specified'});
+    }
+
+    var args = {
+        filters:{
+            _id:req.body._id,
+            creator:req.session.user._id
+        },
+        options:{
+            multi:true
+        }
+    };
+
+    Workspace.do.delete(args,function(err,folders) {
+        return res.send(folders); 
+    })
 }
 
 Workspace.ws.search = function(req,res,next) {
