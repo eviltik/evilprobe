@@ -3,5 +3,7 @@ evilprobe
 
 Network Security Tool
 
-Current under development. Please come back later ;)
+Currently under development. 
+
+Please come back later ;)
 
