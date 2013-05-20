@@ -1,0 +1,34 @@
+{
+  "info" : 
+  {
+    "name" : "EP",
+
+    "summary" : "Evilprobe",
+    "description" : "Network Security Tools",
+    
+    "homepage" : "http://eviltik.github.io/evilprobe/",
+
+    "license" : "GPLv3",
+    "authors" : 
+    [
+      {
+        "name" : "eviltik",
+        "email" : "eviltik@gmail.com"
+      }
+    ],
+
+    "version" : "trunk",
+    "qooxdoo-versions": ["2.1.1"]
+  },
+  
+  "provides" : 
+  {
+    "namespace"   : "EP",
+    "encoding"    : "utf-8",
+    "class"       : "source/class",
+    "resource"    : "source/resource",
+    "translation" : "source/translation",
+    "type"        : "application"
+  }
+}
+
