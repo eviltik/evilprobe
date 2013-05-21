@@ -27,7 +27,7 @@ window.objectForEach = function(obj,cb,caller) {
 qx.Class.define("EP.Application", {
 
     extend : qx.application.Standalone,
-    
+
     members : {
         __desktop:null,
 
@@ -36,6 +36,9 @@ qx.Class.define("EP.Application", {
 
         /* jobs manager, initialized by __desktop after login succeed */
         __JM: null,
+
+        /* express session id */
+        __session:null,
 
         main : function() {
             this.base(arguments);
@@ -52,7 +55,8 @@ qx.Class.define("EP.Application", {
             });
 
             var loginPopup = new EP.desktop.LoginPopup();
-            loginPopup.addListener('authenticated',function() {
+            loginPopup.addListener('authenticated',function(ev) {
+                this.__session = ev.getData().session;
                 this.__desktop = new EP.desktop.Desktop();
                 this.getRoot().add(this.__desktop,{edge:0});
             },this);
@@ -64,6 +68,10 @@ qx.Class.define("EP.Application", {
 
         getJobsManager:function() {
             return this.__JM;
+        },
+
+        getSession:function() {
+            return this.__session;
         }
 
     }

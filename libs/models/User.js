@@ -60,7 +60,10 @@ User.ws.check = function(req,res,next) {
     if (req.session && req.session.authenticated) {
         authenticated = true;
     }
-    res.send({authenticated:authenticated});
+    res.send({
+        authenticated:authenticated,
+        session:req.session.id
+    });
 }
 
 User.ws.login = function(req,res,next) {
@@ -76,11 +79,17 @@ User.ws.login = function(req,res,next) {
         bcrypt.compare(req.body.password, user.pass, function(err, isMatch) {
             if (err) throw err;
             if (isMatch) {
-                req.session.user =user;
+                req.session.user = {
+                    _id:user._id,
+                    login:user.login
+                }
                 req.session.authenticated = Date.now();
                 authenticated = true;
             }
-            res.send({authenticated:authenticated});
+            res.send({
+                authenticated:authenticated,
+                session:req.session.id
+            });
         });
     });
 }

@@ -3,7 +3,7 @@ qx.Class.define("EP.desktop.LoginPopup", {
     extend : Zen.ui.window.Window,
 
     events : {
-        "authenticated"   : "qx.event.type.Event"
+        "authenticated"   : "qx.event.type.Data"
     },
 
     construct:function() {
@@ -49,7 +49,7 @@ qx.Class.define("EP.desktop.LoginPopup", {
         __urlAuthCheck:'auth/check',
 
         __onAuthCheck:function(err,res) {
-            if (!res||res.authenticated=='undefined') {
+            if (!res||res.authenticated == 'undefined') {
                 dialog.Dialog.error("Fatal error while verifying session<br/>Please check server side if all is ok.");
                 return;
             }
@@ -60,7 +60,7 @@ qx.Class.define("EP.desktop.LoginPopup", {
                 return;
             }
             this.close();
-            this.fireEvent('authenticated');
+            this.fireDataEvent('authenticated',res);
         },
 
         __getWait:function() {
@@ -140,7 +140,7 @@ qx.Class.define("EP.desktop.LoginPopup", {
                 margin:5,
                 placeholder:'Password',
                 invalidMessage:'Invalid password',
-                value:'admin'                
+                value:'admin'
             })
 
             input.addListener('keyup', this.__checkForm,this);
@@ -209,7 +209,7 @@ qx.Class.define("EP.desktop.LoginPopup", {
                 return;
             }
 
-            if (!res||res.authenticated=='undefined') {
+            if (!res||res.authenticated == 'undefined') {
                 this.__labelResponse.setValue('<font color="red"><b>&gt; Authentication error !&lt;</b></font>');
                 return;
             }
@@ -222,7 +222,7 @@ qx.Class.define("EP.desktop.LoginPopup", {
             }
 
             this.__labelResponse.setValue('<font color="green"><b>&gt; Access granted &lt;</b></font>');
-            this.fireEvent('authenticated');
+            this.fireDataEvent('authenticated',res);
             this.close();
         }
     }
