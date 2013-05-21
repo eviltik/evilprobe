@@ -17,6 +17,7 @@ qx.Class.define("EP.desktop.portsScannerMenu", {
         __helpMenu:null,
         __preferenceMenu:null,
 
+
         __getMenuWorkspace:function() {
             var m = new Zen.ui.menubar.Button('Bla',null,this.__getMenuWorkspaceItems());
             this.__workspaceMenu = m;
