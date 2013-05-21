@@ -7,8 +7,6 @@ var app = express();
 
 var init = function() {
     /* start classical express webserver */
-    app.use(express.cookieParser());
-    app.use(express.session({ secret: 'nothingSecretHere' }));
     app.use(express.bodyParser());
 
     app.get('*',function(req,res,next) {
@@ -75,16 +73,20 @@ var init = function() {
     app.all('/ws/folder/:workspaceId/delete',Folder.ws.delete);
     app.all('/ws/folder/:workspaceId/deleteAll',Folder.ws.deleteAll);
     app.all('/ws/folder/:workspaceId/openClose',Folder.ws.openClose);
-    app.listen(global.port||80);    
+    app.listen(global.port||80);
 }
 
 var start = function() {
+
+    app.use(express.cookieParser());
+    app.use(express.session({ secret: 'nothingSecretHere' }));
+
     if (global.bayeux) {
         // always use first param of use to isolate faye mount point
         // bodyParser must always be initialized after bayeux
         app.use('/faye',global.bayeux);
     }
-    welcome();    
+    welcome();
     init();
 }
 
