@@ -57,8 +57,13 @@ qx.Class.define("EP.Application", {
                 this.getRoot().add(this.__desktop,{edge:0});
             },this);
         },
+
         getDesktop:function() {
             return this.__desktop;
+        },
+
+        getJobsManager:function() {
+            return this.__JM;
         }
 
     }
