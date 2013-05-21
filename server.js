@@ -21,6 +21,10 @@ global.redirect = '/source/';
 // Background tasks
 global.procs = {}
 
+// session
+// TODO: but that in mongodb with TTL !
+global.sessions = {}
+
 // Faye/bayeux setup
 global.bayeux = require('./libs/bayeux');
 
@@ -34,7 +38,25 @@ global.jobManager = require('./libs/job');
 global.jobManager.setDebug(argv.debug||false);
 
 if (global.bayeuxClient) {
-    var s = bayeuxClient.subscribe('/jobs/manage', function(d) {
+    var s = bayeuxClient.subscribe('/jobs/manage/*', function(d) {
+
+        if (!d) {
+            console.log('Error: received null message');
+            return;
+        }
+
+        if (!d.userSessionId) {
+            console.log('Error: received something without userSessionId !',JSON.stringify(d));
+            return;
+        }
+
+        var userId = global.sessions[d.userSessionId];
+        if (!userId) {
+            console.log('Error: unknow user with session ',d.userSessionId);
+            return;
+        }
+
+        d.userId = userId;
 
         if (!d.jobCmd) {
             console.log('Error: received something without cmd !',JSON.stringify(d));
