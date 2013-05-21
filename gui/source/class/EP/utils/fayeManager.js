@@ -15,7 +15,7 @@
 		this.client = new Faye.Client('/faye'),
 		this.channels = {
 			jobsStatus : '/jobs/status',
-			jobsManage : '/jobs/manage'
+			jobsManage : '/jobs/manage/'+qx.core.Init.getApplication().getSession()
 		}
     },
 
@@ -32,9 +32,12 @@
             //console.log("jobSubscribe",channel);
             this.__notify();
             return this.client.subscribe(channel,qx.lang.Function.bind(cb,caller));
-        },        
+        },
         jobPublish : function(job) {
             if (!this.client) return;
+            if (job) {
+                job.userSessionId = qx.core.Init.getApplication().getSession();
+            }
             //console.log("jobPublish",this.channels.jobsManage,job);
             this.__notify();
             return this.client.publish(this.channels.jobsManage,job);
@@ -42,7 +45,12 @@
         jobCommand : function(jobUid,cmd) {
             if (!this.client) return;
             this.__notify();
-            return this.client.publish(this.channels.jobsManage,{jobUid:jobUid,jobCmd:cmd});
+            var args = {
+                jobUid:jobUid,
+                jobCmd:cmd,
+                userSessionId:qx.core.Init.getApplication().getSession()
+            }
+            return this.client.publish(this.channels.jobsManage,args);
         },
         unsubscribe : function(subscription) {
             if (!this.client) return;
