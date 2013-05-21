@@ -103,7 +103,7 @@ qx.Class.define("EP.desktop.Menu", {
             this.__helpMenuBtAbout = btAbout;
 
             m.add(btRessources);
-            m.add(btAbout);
+            //m.add(btAbout);
 
             return m;
         },

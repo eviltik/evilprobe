@@ -16,8 +16,8 @@ qx.Class.define("EP.desktop.helpRessourcesPopup", {
     		caption:'Ressources',
     		layout:new qx.ui.layout.Grow,
     		modal:false, // If true, key events will not be handled by textFields
-            fadeIn:true,
-            fadeOut:true,
+            fadeInAppear:true,
+            fadeOutClose:true,
             center:true
     	})
 
