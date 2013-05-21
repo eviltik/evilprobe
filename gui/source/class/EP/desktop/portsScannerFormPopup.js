@@ -1,6 +1,6 @@
-qx.Class.define("EP.view.portsScannerFormPopup", {
+qx.Class.define("EP.desktop.portsScannerFormPopup", {
     extend : qx.ui.window.Window,
-    construct:function() {
+    construct:function(args) {
 
     	this.base(arguments);
 
@@ -20,7 +20,10 @@ qx.Class.define("EP.view.portsScannerFormPopup", {
     		this.center();
     	});
 
-    	var f = new EP.view.portsScannerForm({popup:this})
+        if (!args) args = {};
+        args.popup = this;
+
+    	var f = new EP.desktop.portsScannerForm(args)
     	f.addListener('done',function() {
     		this.close();
     	},this);
