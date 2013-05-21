@@ -58,12 +58,16 @@ User.ws = {}
 User.ws.check = function(req,res,next) {
     var authenticated = false;
     if (req.session && req.session.authenticated) {
-        authenticated = true;
+        res.send({
+            authenticated:true,
+            user:{
+                session:req.session.id,
+                login:req.session.user.login
+            }
+        });
+    } else {
+        res.send({authenticated:false});
     }
-    res.send({
-        authenticated:authenticated,
-        session:req.session.id
-    });
 }
 
 User.ws.login = function(req,res,next) {
@@ -80,16 +84,23 @@ User.ws.login = function(req,res,next) {
             if (err) throw err;
             if (isMatch) {
                 req.session.user = {
-                    _id:user._id,
+                    session:req.session.id,
                     login:user.login
                 }
                 req.session.authenticated = Date.now();
                 authenticated = true;
+                // TODO: put that in mongo db with TTL !
+                global.sessions[req.session.id] = user._id;
+                res.send({
+                    authenticated:authenticated,
+                    user:req.session.user
+                });
+                req.session.user._id = user._id;
+            } else {
+                res.send({
+                    authenticated:false
+                });
             }
-            res.send({
-                authenticated:authenticated,
-                session:req.session.id
-            });
         });
     });
 }

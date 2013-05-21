@@ -56,7 +56,7 @@ qx.Class.define("EP.Application", {
 
             var loginPopup = new EP.desktop.LoginPopup();
             loginPopup.addListener('authenticated',function(ev) {
-                this.__session = ev.getData().session;
+                this.__session = ev.getData().user.session;
                 this.__desktop = new EP.desktop.Desktop();
                 this.getRoot().add(this.__desktop,{edge:0});
             },this);
