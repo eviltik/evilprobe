@@ -2,9 +2,9 @@ qx.Class.define("EP.utils.jobsManager", {
 
     extend : qx.core.Object,
 
-    construct : function(fayeManager) {
+    construct : function(args) {
         this.base(arguments);
-        this.__FM = fayeManager;
+        this.__FM = args.FM;
     },
 
     members:{
