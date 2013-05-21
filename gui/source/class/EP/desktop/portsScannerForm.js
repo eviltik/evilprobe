@@ -1,8 +1,8 @@
 /**
- * @lint ignoreUndefined(CIDR,objectForEach,Faye)
+ * @lint ignoreUndefined(CIDR.get,objectForEach)
  */
 
- qx.Class.define("EP.view.portsScannerForm", {
+ qx.Class.define("EP.desktop.portsScannerForm", {
 
     extend : qx.ui.container.Composite,
 
@@ -11,7 +11,10 @@
     },
 
     construct : function(args) {
+        this.__args = args;
+
         this.base(arguments);
+
         this.setLayout(new qx.ui.layout.VBox);
         this.set({
             padding:0,
@@ -46,6 +49,10 @@
                 invalidMessage:'Invalid CIDR Range',
                 value:'122.99.128.0/17'
             })
+
+            if (this.__args.value) {
+                input.setValue(this.__args.value);
+            }
 
             var t = new qx.ui.tooltip.ToolTip("Type an IP Address or a CIDR Range.",null);
             t.setShowTimeout(50);
@@ -153,6 +160,10 @@
             job.jobCmd = 'portscan';
             job.jobTitle = 'Scanning '+this.inputCidr.getValue();
             job.jobUid = Date.now();
+            job.metadata = {
+                workspaceId:this.__args.workspaceId,
+                parent:this.__args.folderId
+            }
 
             // Command arguments
             job.args = {};
@@ -163,7 +174,7 @@
             this.checkboxResolveDns.getValue() ? job.args.reverse = true : job.args.reverse = false;
 
             // Ask the server to start the job
-            qx.core.Init.getApplication().getJobsManager().push(job,new EP.view.portsScannerPage(job));
+            qx.core.Init.getApplication().getJobsManager().push(job);
 
             this.fireEvent('done');
         }
