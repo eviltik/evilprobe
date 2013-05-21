@@ -36,7 +36,7 @@
 
         this.__workspaceData = workspaceData;
         this.__tabViewer = tabViewer;
-        
+
     },
 
     members : {
@@ -67,7 +67,8 @@
 
         __onMenuDelete:function() {
             new EP.utils.xhr('workspace/mines/delete',{_id:this.__workspaceData._id},function(err,r) {
-                this.dispose();
+                this.__tabViewer.setSelection(0);
+                this.destroy();
             },this).send();  
         },
 
