@@ -103,12 +103,12 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 node.setUserData('parent',parent);
             }
 
-            if (node.getType() == undefined) {
+            if (node.getType() === undefined) {
                 node.setType('');
                 node.setChilds([]);
             }
 
-            if (node.getOpened()) { 
+            if (node.getOpened && node.getOpened()) { 
                 this.openNode(node);
             }
 
@@ -155,7 +155,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
             this.__tm.setChilds(nr);
             this.__configureNode(this.__tm);
             this.refresh();
-            this.__loaded=true;
+            this.__loaded = true;
         },
 
         __onTreeClick:function(ev) {
@@ -189,7 +189,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 node.setUserData('clickTimestamp',Date.now());
                 node.setUserData('clickTimer',qx.lang.Function.delay(function() {
                     node.setUserData('clickTimer',null);
-                    node.setUserData('clickTimestamp',null)
+                    node.setUserData('clickTimestamp',null);
                 },1000),this);
             }
         },
@@ -210,34 +210,50 @@ qx.Class.define("EP.desktop.portsScannerTree", {
 
         __onTreeContextMenu:function(ev) {
 
+            var type = '';
             var item = this.getSelection().getItem(0);
-            if (item) {
-                var type = item.getType();
-            }
+            if (item) type = item.getType();
+
 
             var contextMenu = new qx.ui.menu.Menu();
 
-            var menuNewFolder = new qx.ui.menu.Button("New folder",'EP/folder_opened.png');
-            menuNewFolder.addListener('execute',this.__onMenuNewFolder,this);
+            if (type == 'host') {
 
-            var menuNewNetwork = new qx.ui.menu.Button("New network",'EP/network.png');
-            menuNewNetwork.addListener('execute',this.__onMenuNewNetwork,this);
+                var menuPortScan = new qx.ui.menu.Button('TCP ports scan','EP/scan.png');
+                menuPortScan.addListener('execute',function() {
+                    var args = {
+                        value:item.getName(),
+                        folderId:item.get_id(),
+                        workspaceId:this.__workspaceData._id
+                    };
+                    var bla = new EP.desktop.portsScannerFormPopup(args);
+                    bla.open();
+                },this);
+                contextMenu.add(menuPortScan);
 
-            var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.gif');
-            menuNewHost.addListener('execute',this.__onMenuNewHost,this);
+            } else {
+                var menuNewFolder = new qx.ui.menu.Button("New folder",'EP/folder_opened.png');
+                menuNewFolder.addListener('execute',this.__onMenuNewFolder,this);
 
-            var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
-            menuEdit.addListener('execute',this.__nodeEdit,this);
+                var menuNewNetwork = new qx.ui.menu.Button("New network",'EP/network.png');
+                menuNewNetwork.addListener('execute',this.__onMenuNewNetwork,this);
 
-            var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
-            menuDelete.addListener('execute',this.__onMenuDelete,this);
+                var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.gif');
+                menuNewHost.addListener('execute',this.__onMenuNewHost,this);
 
-            contextMenu.add(menuNewFolder);
-            contextMenu.add(menuNewNetwork);
-            contextMenu.add(menuNewHost);
-            contextMenu.add(new qx.ui.menu.Separator());
-            contextMenu.add(menuEdit);
-            contextMenu.add(menuDelete);
+                var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
+                menuEdit.addListener('execute',this.__nodeEdit,this);
+
+                var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
+                menuDelete.addListener('execute',this.__onMenuDelete,this);
+
+                contextMenu.add(menuNewFolder);
+                contextMenu.add(menuNewNetwork);
+                contextMenu.add(menuNewHost);
+                contextMenu.add(new qx.ui.menu.Separator());
+                contextMenu.add(menuEdit);
+                contextMenu.add(menuDelete);
+            }
 
             contextMenu.placeToMouse(ev);
             contextMenu.show();
@@ -362,8 +378,8 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                     }
                     item.setUserData('previousName',item.getName());                    
                     item.setName(input.getValue());
-                    if (item.get('_id')!=null) {
-                        this.fireDataEvent('nodeUpdated',item)
+                    if (item.get('_id') !== null) {
+                        this.fireDataEvent('nodeUpdated',item);
                     } else {
                         this.fireDataEvent('nodeCreated',item);
                     }
@@ -420,7 +436,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
         __nodeDeleted:function(ev) {
             var item = ev.getData();
             var parent = item.getUserData('parent');
-            if (item.get_id() == null) {
+            if (item.get_id() === null) {
                 // was a fresh created node
                 parent.getChilds().remove(item);
                 this.refresh();
