@@ -4,15 +4,12 @@
 var spawn = require('child_process').spawn;
 var db = require('./libs/db');
 var argv = require('optimist').argv;
+var log = require('./libs/logger').log;
 
 // Evilprobe's libs
 var jsUtils = require('./libs/jsUtils');
 var app = require('./libs/app');
 var portscan = require('./libs/portscan');
-
-// Job manager
-global.jobManager = require('./libs/job');
-global.jobManager.setDebug(argv.debug||false);
 
 // Webserver setup
 global.port = 81;
@@ -26,16 +23,24 @@ global.procs = {}
 
 // Faye/bayeux setup
 global.bayeux = require('./libs/bayeux');
-global.bayeuxClient = new bayeux.Client('http://localhost:'+port+'/faye');
+
 
 app.start();
 
+global.bayeuxClient = new bayeux.Client('http://'+host+':'+port+'/faye');
+
+// Job manager
+global.jobManager = require('./libs/job');
+global.jobManager.setDebug(argv.debug||false);
+
 if (global.bayeuxClient) {
-    bayeuxClient.subscribe('/jobs/manage', function(d) {
+    var s = bayeuxClient.subscribe('/jobs/manage', function(d) {
+
         if (!d.jobCmd) {
             console.log('Error: received something without cmd !',JSON.stringify(d));
             return;
         }
+
         if (d.jobCmd == 'portscan') {
             return portscan(d);
         }
@@ -56,4 +61,14 @@ if (global.bayeuxClient) {
             return global.procs[d.jobUid].kill();
         }
     });
+
+    s.callback(function() {
+        log.info('Channel /jobs/manage initialized');
+    });
+
+    s.errback(function(error) {
+        log.error(error.message);
+        process.exit(0);
+    });
+
 }
