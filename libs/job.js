@@ -71,7 +71,10 @@ var getJobs = function(clean) {
 /* publish jobs list if changes occured so the GUI can display it */
 var previousJobs =[];
 var refreshJobs = setInterval(function() {
-    if (!global.bayeuxClient) return;
+    if (!global.bayeuxClient) {
+    	return console.log('> No bayeux client, ignoring');
+    	clearInterval(refreshJobs);
+    }
     var jobs = getJobs(true);
     if (JSON.stringify(jobs) != previousJobs) {
         global.bayeuxClient.publish('/jobs/status',jobs);
