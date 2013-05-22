@@ -1,46 +1,61 @@
 /**
- * @lint ignoreUndefined(CIDR.get,objectForEach)
+ * @lint ignoreUndefined(CIDR.get)
  */
 
- qx.Class.define("EP.desktop.portsScannerForm", {
+ qx.Class.define("EP.desktop.portsScannerPopup", {
 
-    extend : qx.ui.container.Composite,
+    extend : Zen.ui.window.Window,
 
-    events : {
-        "done"   : "qx.event.type.Event"
-    },
-
-    construct : function(args,meta) {
-        this.__args = args;
+    construct : function(widget,meta) {
+        this.__parentWidget = widget;
         this.__meta = meta;
 
         this.base(arguments);
 
-        this.setLayout(new qx.ui.layout.VBox);
         this.set({
-            padding:0,
-            margin:0
-        });
+            contentPadding:0,
+            resizable:false,
+            showMinimize:false,
+            showMaximize:false,
+            margin:0,
+            width:300,
+            caption:'Ports Scanner',
+            layout:new qx.ui.layout.VBox(),
+            modal:true,
+            center:true
+        })
 
         this.add(this.getInputCidr());
         this.add(this.getInputPortsList());
         this.add(this.getCheckboxResolveCountry());
         this.add(this.getCheckboxResolveCity());
         this.add(this.getCheckboxResolveDns());
+        this.add(this.getButtons());
 
-        if (args.popup) {
-            this.popup = args.popup;
+    },
+
+    members:{
+
+        getButtons : function() {
             var c = new qx.ui.container.Composite(new qx.ui.layout.Canvas(0,0)).set({margin:5});
             c.add(this.getButtonCancel(),{left: 0});
             c.add(this.getButtonScan(),{right: 0});
             this.add(new qx.ui.core.Spacer(500));
             this.add(c);
-        } else {
-            this.add(this.getButtonScan());
-        }
-    },
+            return c;
+        },
 
-    members:{
+        getButtonScan:function() {
+            var bt = new qx.ui.form.Button("OK", "icon/16/actions/dialog-ok.png");
+            bt.addListener('execute',this.startScan,this);
+            return bt;
+        },
+
+        getButtonCancel:function() {
+            var bt = new qx.ui.form.Button("Cancel","icon/16/actions/dialog-cancel.png");
+            bt.addListener('execute',this.close,this);
+            return bt;
+        },
 
         getInputCidr : function() {
             var input = new qx.ui.form.TextField().set({
@@ -53,6 +68,7 @@
 
             if (this.__meta && this.__meta.value) {
                 input.setValue(this.__meta.value);
+                input.setEnabled(false);
             }
 
             var t = new qx.ui.tooltip.ToolTip("Type an IP Address or a CIDR Range.",null);
@@ -117,20 +133,6 @@
             return this.checkboxResolveDns = new qx.ui.form.CheckBox('Reverse lookup').set({margin:4, value:true});
         },
 
-        getButtonScan:function() {
-            var bt = new qx.ui.form.Button("OK", "icon/16/actions/dialog-ok.png");
-            bt.addListener('execute',this.startScan,this);
-            return bt;
-        },
-
-        getButtonCancel:function() {
-            var bt = new qx.ui.form.Button("Cancel","icon/16/actions/dialog-cancel.png");
-            bt.addListener('execute',function() {
-                this.fireEvent('done');
-            },this);
-            return bt;
-        },
-
         isValid : function() {
             var c = this.inputCidr.getValue();
             if (!c) {
@@ -172,10 +174,10 @@
             this.checkboxResolveDns.getValue() ? job.args.reverse = true : job.args.reverse = false;
 
             // Ask the server to start the job
-            console.log(job);
-            qx.core.Init.getApplication().getJobsManager().push(job);
 
-            this.fireEvent('done');
+            qx.core.Init.getApplication().getJobsManager().push(job,this.__parentWidget);
+
+            this.close();
         }
     }
 });

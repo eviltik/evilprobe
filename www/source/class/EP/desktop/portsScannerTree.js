@@ -221,14 +221,13 @@ qx.Class.define("EP.desktop.portsScannerTree", {
 
                 var menuPortScan = new qx.ui.menu.Button('TCP ports scan','EP/scan.png');
                 menuPortScan.addListener('execute',function() {
-                    var args = {
+                    var meta = {
                         value:item.getName(),
                         parent:item.get_id(),
                         workspaceId:this.__workspaceData._id,
                         type:type
                     };
-                    var bla = new EP.desktop.portsScannerFormPopup(args);
-                    bla.open();
+                    new EP.desktop.portsScannerPopup(this,meta).open();
                 },this);
                 contextMenu.add(menuPortScan);
 
