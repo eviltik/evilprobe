@@ -1,0 +1,46 @@
+Index: source/class/canvascell/plotter/Bar.js
+===================================================================
+--- source/class/canvascell/plotter/Bar.js	(révision 21841)
++++ source/class/canvascell/plotter/Bar.js	(copie de travail)
+@@ -2,7 +2,7 @@
+ 
+    Copyright:
+      2010 OETIKER+PARTNER AG, http://www.oetiker.ch
+-     
++
+    License:
+      LGPL: http://www.gnu.org/licenses/lgpl.html
+      EPL: http://www.eclipse.org/org/documents/epl-v10.php
+@@ -26,18 +26,18 @@
+      * Instanciate the plotter
+      *
+      * @param cfg {Map} configuration map
+-     * 
++     *
+      * <pre class='javascript'>
+      * cfg = {
+      *    fill:   '#color',
+-     *    border: '#color' 
++     *    border: '#color'
+      * };
+      * </pre>
+      */
+     construct : function(cfg) {
+         this.base(arguments);
+         this.__cfg = cfg;
+-        this.reset();
++        this.reset(cfg.max);
+     },
+ 
+     members : {
+@@ -84,8 +84,8 @@
+         /**
+          * reset any context data stored inside the plotter
+          */
+-        reset : function() {
+-            this.__max = 0;
++        reset : function(max) {
++            this.__max = max||0;
+         }
+     }
+ });
