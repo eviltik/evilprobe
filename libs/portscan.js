@@ -1,9 +1,10 @@
 var spawn = require('child_process').spawn;
 var jsUtils = require('../libs/jsUtils');
 var jobManager = require('../libs/job');
-
+var db = require('./db');
 var concurrency = 800;
 var cmd = '/home/zenetik/scan/scan.js';
+var Folder = db.model('Folder');
 
 /* portscan abstract handler */
 var portscan = function(opts) {
@@ -56,7 +57,7 @@ var portscan = function(opts) {
         jobTitle:jobTitle
     };
 
-    db.collection('jobs').insert(j);
+    //db.collection('jobs').insert(j);
 
     var proc = spawn(cmd,cmdArgs);
     global.procs[jobUid] = proc;
@@ -76,13 +77,26 @@ var portscan = function(opts) {
             if (l) {
                 if (l._message||l._error) {
                     return global.jobManager.update(jobUid,l);
-                } else {
-                    bayeuxClient.publish('/jobs/'+jobUid,l);
-                    l.jobUid = jobUid;
-                    l.ts = Date.now();
-                    console.log('< '+jobUid+': ',JSON.stringify(l));
-                    db.collection('portscan').insert(l);
                 }
+                bayeuxClient.publish('/jobs/'+jobUid,l);
+                l.jobUid = jobUid;
+                l.ts = Date.now();
+                console.log('< '+jobUid+': ',JSON.stringify(l));
+
+                var o = {
+                    workspace:opts.metadata.workspaceId,
+                    parent:opts.metadata.parent,
+                    creator:opts.userId
+                }
+                if (opts.metadata.type == 'host') {
+                    o.name = l.port;
+                    o.type = 'port';
+                }
+                Folder.do.create(o,function(err,r) {
+                    if (err) throw new err;
+                });
+                //console.log(o,l);
+                //db.collection('portscan').insert(l);
             }
         });
     });
