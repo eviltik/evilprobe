@@ -28,18 +28,18 @@ qx.Class.define("EP.desktop.portsScannerTree", {
         this.base(arguments,this.__root,'name','childs');
 
     	this.set({
-            //showTopLevelOpenCloseIcons:true,            
+            showTopLevelOpenCloseIcons:true,
     		width:300,
             itemHeight:22,
             droppable:true,
             draggable:true,
-            hideRoot:true       
+            hideRoot:true
     	});
 
         this.__tm = this.getModel();
 
 
-        var delegateTree = { 
+        var delegateTree = {
             bindItem : function(controller, node, id) {
                 controller.bindDefaultProperties(node, id);
                 node.getModel().setUserData("qxnode", node);
@@ -49,14 +49,14 @@ qx.Class.define("EP.desktop.portsScannerTree", {
         this.setDelegate(delegateTree);
         this.openNode(this.__root);
 
-        this.setIconPath("type"); 
-        this.setIconOptions({ 
-            converter : function(value, model){ 
+        this.setIconPath("type");
+        this.setIconOptions({
+            converter : function(value, model){
                 if (value == 'network') return "EP/network.png";
                 if (value == 'host') return "EP/host.png";
                 if (value == 'port') return "EP/port.png";
             }
-        }); 
+        });
 
         this.__configureNode(this.__tm);
 
@@ -73,9 +73,9 @@ qx.Class.define("EP.desktop.portsScannerTree", {
         this.addListener('open',this.__nodeOpened,this);
         this.addListener('close',this.__nodeClosed,this);
 
-        /* TODO : drag & drop 
+        /* TODO : drag & drop
         this.addListener('dragstart', this.__nodeDragStart,this);
-        this.addListener('dragover',this.__nodeDragOver,this);        
+        this.addListener('dragover',this.__nodeDragOver,this);
         this.addListener('dragend',this.__nodeDragEnd,this);
         this.addListener('drag',this.__nodeDrag,this);
         this.addListener('drop',this.__nodeDrop,this);
@@ -108,7 +108,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 node.setChilds([]);
             }
 
-            if (node.getOpened && node.getOpened()) { 
+            if (node.getOpened && node.getOpened()) {
                 this.openNode(node);
             }
 
@@ -128,7 +128,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
 
             // Recursive on childs
             for (var x=0; x < length; x++) {
-                this.__configureNode(children.getItem(x), node); 
+                this.__configureNode(children.getItem(x), node);
             }
         },
 
@@ -164,7 +164,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
 
             if (c == 'qx.ui.virtual.core.Pane') {
 
-                // qx.ui.virtual.core.Pane 
+                // qx.ui.virtual.core.Pane
                 // click received from empty tree area
                 // let's reset selection
                 this.getSelection().removeAll();
@@ -223,8 +223,9 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 menuPortScan.addListener('execute',function() {
                     var args = {
                         value:item.getName(),
-                        folderId:item.get_id(),
-                        workspaceId:this.__workspaceData._id
+                        parent:item.get_id(),
+                        workspaceId:this.__workspaceData._id,
+                        type:type
                     };
                     var bla = new EP.desktop.portsScannerFormPopup(args);
                     bla.open();
@@ -264,7 +265,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 });
                 contextMenu.dispose();
             });
-    
+
             return true;
         },
 
@@ -358,7 +359,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 input.destroy();
                 this.focus();
             },this);
-    
+
             var input = new qx.ui.form.TextField().set({
                 decorator:null,
                 allowGrowX:true,
@@ -376,7 +377,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                         popup.hide();
                         return;
                     }
-                    item.setUserData('previousName',item.getName());                    
+                    item.setUserData('previousName',item.getName());
                     item.setName(input.getValue());
                     if (item.get('_id') !== null) {
                         this.fireDataEvent('nodeUpdated',item);
@@ -391,7 +392,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
             input.selectAllText();
             popup.add(input);
             popup.placeToWidget(qxnode, true);
-            popup.show();      
+            popup.show();
         },
 
         __nodeUpdated:function(ev) {
@@ -405,7 +406,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                 name:data.getName()
             };
 
-            new EP.utils.xhr(this.__getUrl('update'),d,this.__onNodeUpdated,this).send();                
+            new EP.utils.xhr(this.__getUrl('update'),d,this.__onNodeUpdated,this).send();
         },
 
         __onNodeUpdated:function(err,r) {
@@ -452,11 +453,11 @@ qx.Class.define("EP.desktop.portsScannerTree", {
         },
 
         __nodeOpened:function(ev) {
-            this.__nodeToggleOpenClose(ev.getData(),true);     
+            this.__nodeToggleOpenClose(ev.getData(),true);
         },
 
         __nodeClosed:function(ev) {
-            this.__nodeToggleOpenClose(ev.getData(),false);    
+            this.__nodeToggleOpenClose(ev.getData(),false);
         },
 
         __nodeToggleOpenClose:function(item,status) {
@@ -466,11 +467,11 @@ qx.Class.define("EP.desktop.portsScannerTree", {
 
             new EP.utils.xhr(this.__getUrl('openClose'),{_id:_id,opened:status},function(err,r) {
                 item.setOpened(status);
-            },this).send();    
+            },this).send();
         },
 
-        /* 
-         * TODO: drag & drop 
+        /*
+         * TODO: drag & drop
          */
 
         __nodeDragStart:function(ev) {
@@ -487,7 +488,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
             // Stop when the dragging comes from outside
             if (ev.getRelatedTarget()) {
                 ev.preventDefault();
-            }            
+            }
         },
 
         __nodeDrag:function(ev) {
