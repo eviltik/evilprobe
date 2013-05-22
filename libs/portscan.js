@@ -78,10 +78,6 @@ var portscan = function(opts) {
                 if (l._message||l._error) {
                     return global.jobManager.update(jobUid,l);
                 }
-                bayeuxClient.publish('/jobs/'+jobUid,l);
-                l.jobUid = jobUid;
-                l.ts = Date.now();
-                console.log('< '+jobUid+': ',JSON.stringify(l));
 
                 var o = {
                     workspace:opts.metadata.workspaceId,
@@ -91,12 +87,20 @@ var portscan = function(opts) {
                 if (opts.metadata.type == 'host') {
                     o.name = l.port;
                     o.type = 'port';
+                    o.opened = true;
                 }
                 Folder.do.create(o,function(err,r) {
                     if (err) throw new err;
+                    l.node = r;
+                    bayeuxClient.publish('/jobs/'+jobUid,l);
+
+                    l.jobUid = jobUid;
+                    l.ts = Date.now();
+                    console.log('< '+jobUid+': ',JSON.stringify(l));
                 });
+
+
                 //console.log(o,l);
-                //db.collection('portscan').insert(l);
             }
         });
     });

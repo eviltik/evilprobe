@@ -5,7 +5,8 @@ qx.Class.define("EP.app.folder.Tree", {
     events : {
         nodeCreated: "qx.event.type.Data",
         nodeUpdated: "qx.event.type.Data",
-        nodeDeleted: "qx.event.type.Data"
+        nodeDeleted: "qx.event.type.Data",
+        jobMessage: "qx.event.type.Data"
     },
 
     construct:function(workspaceData) {
@@ -73,6 +74,8 @@ qx.Class.define("EP.app.folder.Tree", {
         this.addListener('open',this.__nodeOpened,this);
         this.addListener('close',this.__nodeClosed,this);
 
+        this.addListener('jobMessage',this.__onJobMessage,this);
+
         /* TODO : drag & drop
         this.addListener('dragstart', this.__nodeDragStart,this);
         this.addListener('dragover',this.__nodeDragOver,this);
@@ -96,6 +99,42 @@ qx.Class.define("EP.app.folder.Tree", {
         __previousSelected:null,
         __previousNodeClicked:null,
         __loaded:false,
+        __nodeMap:{},
+
+        __onJobMessage:function(ev) {
+            var node = JSON.parse(JSON.stringify(ev.getData().message.node));
+            var parentId = node.parent;
+            delete node.parent;
+            var node = qx.data.marshal.Json.createModel(node,false);
+            this.__addNode(node,parentId);
+        },
+
+        __addNode:function(node,parentId) {
+            if (this.__nodeMap[parentId] && this.__nodeMap[parentId].getChilds) {
+                this.__nodeMap[parentId].getChilds().push(node);
+                this.__configureNode(node,this.__nodeMap[parentId]);
+            }
+        },
+
+        /*
+        __addNodeRecursive:function(currentNode,nodeToAdd,parentId) {
+            if (!currentNode.getChilds) return;
+            var length = currentNode.getChilds().getLength();
+            // Recursive on childs
+            var found = false;
+            var x = 0;
+            while (x<length || !found) {
+                var cNode = currentNode.getChilds().getItem(x);
+                if (cNode.get_id() == parentId) {
+                    found = true;
+                    cNode.getChilds().push(nodeToAdd);
+                } else {
+                    this.__addNodeRecursive(cNode, nodeToAdd,parentId);
+                }
+                x++;
+            }
+        },
+        */
 
         __configureNode:function(node,parent) {
 
@@ -111,6 +150,8 @@ qx.Class.define("EP.app.folder.Tree", {
             if (node.getOpened && node.getOpened()) {
                 this.openNode(node);
             }
+
+            this.__nodeMap[node.get_id()] = node;
 
             // got childs ?
             if (!node.getChilds) {

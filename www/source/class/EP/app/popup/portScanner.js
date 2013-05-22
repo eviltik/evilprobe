@@ -174,9 +174,7 @@
             this.checkboxResolveDns.getValue() ? job.args.reverse = true : job.args.reverse = false;
 
             // Ask the server to start the job
-
             qx.core.Init.getApplication().getJobsManager().push(job,this.__parentWidget);
-
             this.close();
         }
     }

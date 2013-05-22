@@ -19,11 +19,8 @@ qx.Class.define("EP.app.manager.Jobs", {
             // (rathern than looping in jobsList and search for jobUid)
             // the function has been bind to an object :
             // {self:this, job:job}
-
-            var job = this.job;
-            var widget = this.widget;
-            widget.fireDataEvent('jobMessage',obj);
-            console.log('onJobMessage',job.jobUid,obj);
+            this.widget.fireDataEvent('jobMessage',{message:obj,data:this});
+            //console.log('onJobMessage',job.jobUid,this);
         },
 
         __remove : function(jobUid) {
