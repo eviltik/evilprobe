@@ -1,3 +1,3 @@
-[submodule "gui/contrib/Dialog"]
-	path = gui/contrib/Dialog
+[submodule "www/contrib/Dialog"]
+	path = www/contrib/Dialog
 	url = https://github.com/franck34/qx-contrib-Dialog.git
