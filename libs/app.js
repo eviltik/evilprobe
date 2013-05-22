@@ -26,7 +26,7 @@ var init = function() {
         next();
     })
 
-    app.use(express.static(__dirname+'/../gui/'));
+    app.use(express.static(__dirname+'/../www/'));
 
     /* faye error occured when browser is asking for favicon */
     app.get('/favicon.ico',function(req,res,next) {
