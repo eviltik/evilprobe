@@ -3,7 +3,7 @@ var jsUtils = require('../libs/jsUtils');
 var jobManager = require('../libs/job');
 var db = require('./db');
 var concurrency = 800;
-var cmd = '/home/zenetik/scan/scan.js';
+var cmd = '/home/evil/portscanner/scan.js';
 var Folder = db.model('Folder');
 
 /* portscan abstract handler */
