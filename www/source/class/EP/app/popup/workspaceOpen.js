@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.workspaceOpenPopup", {
+qx.Class.define("EP.app.popup.workspaceOpen", {
 
     extend : Zen.ui.window.Window,
 

@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.workspacesTabViewer", {
+qx.Class.define("EP.app.desktop.Workspaces", {
 
     extend : qx.ui.tabview.TabView,
 
@@ -25,7 +25,7 @@ qx.Class.define("EP.desktop.workspacesTabViewer", {
 
         this.workspacesLoad();
     },
-    
+
     members: {
 
         /*******************/
@@ -36,7 +36,7 @@ qx.Class.define("EP.desktop.workspacesTabViewer", {
 
         __tabAdd:function(workspaceData,forceSelection) {
 
-            var page = new EP.desktop.portsScannerPage(workspaceData,this);
+            var page = new EP.app.folder.Page(workspaceData,this);
             page.set({
                 layout:new qx.ui.layout.VBox(5),
                 showCloseButton:true,
@@ -64,7 +64,7 @@ qx.Class.define("EP.desktop.workspacesTabViewer", {
 
         __tabChange:function(ev) {
 
-            // load workspaces fire changeSelection events, 
+            // load workspaces fire changeSelection events,
             // so ignore it when it's the first load
             if (!this.__loaded) {
                 return;
@@ -144,10 +144,10 @@ qx.Class.define("EP.desktop.workspacesTabViewer", {
                         this.__tabAdd(o);
                     }
                 },this);
-                
+
                 this.__loaded = true;
 
             },this).send();
-        } 
+        }
     }
 });

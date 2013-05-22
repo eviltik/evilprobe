@@ -1,4 +1,4 @@
- qx.Class.define("EP.desktop.portsScannerPage", {
+ qx.Class.define("EP.app.folder.Page", {
 
     extend : qx.ui.tabview.Page,
 
@@ -20,11 +20,11 @@
         //this.__faye = qx.core.Init.getApplication().getFayeManager();
         //this.addListener('jobMessage',this.__onJobMessage,this);
 
-        var menu = this.__menu = new EP.desktop.portsScannerMenu();
+        var menu = this.__menu = new EP.app.folder.Menu();
         var container = new qx.ui.container.Composite();
         container.setLayout(new qx.ui.layout.HBox());
 
-        var tree = this.__tree = new EP.desktop.portsScannerTree(workspaceData);
+        var tree = this.__tree = new EP.app.folder.Tree(workspaceData);
 
         container.add(tree);
 
@@ -61,7 +61,7 @@
                 });
                 contextMenu.dispose();
             });
-    
+
             return true;
         },
 
@@ -69,7 +69,7 @@
             new EP.utils.xhr('workspace/mines/delete',{_id:this.__workspaceData._id},function(err,r) {
                 this.__tabViewer.setSelection(0);
                 this.destroy();
-            },this).send();  
+            },this).send();
         },
 
         __onMenuRename:function() {

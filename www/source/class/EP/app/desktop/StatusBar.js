@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.StatusBar", {
+qx.Class.define("EP.app.desktop.StatusBar", {
 
     extend : qx.ui.container.Composite,
 

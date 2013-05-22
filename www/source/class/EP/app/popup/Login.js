@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.LoginPopup", {
+qx.Class.define("EP.app.popup.Login", {
 
     extend : Zen.ui.window.Window,
 

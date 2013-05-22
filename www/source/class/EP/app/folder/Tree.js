@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.portsScannerTree", {
+qx.Class.define("EP.app.folder.Tree", {
 
     extend : qx.ui.tree.VirtualTree,
 
@@ -227,7 +227,7 @@ qx.Class.define("EP.desktop.portsScannerTree", {
                         workspaceId:this.__workspaceData._id,
                         type:type
                     };
-                    new EP.desktop.portsScannerPopup(this,meta).open();
+                    new EP.app.popup.portScanner(this,meta).open();
                 },this);
                 contextMenu.add(menuPortScan);
 

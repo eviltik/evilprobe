@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.workspaceNewPopup", {
+qx.Class.define("EP.app.popup.workspaceNew", {
 
     extend : Zen.ui.window.Window,
 
@@ -57,7 +57,7 @@ qx.Class.define("EP.desktop.workspaceNewPopup", {
             c.add(new qx.ui.core.Widget().set({height:20}),{flex:2});
             c.add(this.__getButtonCancel());
             c.add(this.__getButtonOk());
-            f.add(new qx.ui.core.Spacer(10));            
+            f.add(new qx.ui.core.Spacer(10));
             */
 
             this.__form = f;
@@ -110,12 +110,12 @@ qx.Class.define("EP.desktop.workspaceNewPopup", {
             bt.addListener('execute',this.__doCancel,this);
             this.__buttonCancel = bt;
             return bt;
-        },        
+        },
 
         __isValid : function() {
 
             var c = this.__inputWorkspaceName.getValue();
-            
+
             if (c) {
                 // Remove space at the beginning
                 c = c.replace(/^ */,'');
@@ -124,7 +124,7 @@ qx.Class.define("EP.desktop.workspaceNewPopup", {
 
             if (!c) {
 
-                this.__inputWorkspaceNameMessage.reset();                
+                this.__inputWorkspaceNameMessage.reset();
                 this.__inputWorkspaceName.setValid(true);
                 this.__previousWorkspaceName='';
                 this.__buttonOk.setEnabled(false);
@@ -133,7 +133,7 @@ qx.Class.define("EP.desktop.workspaceNewPopup", {
 
                 this.__data.workspaceName = c;
                 this.__inputWorkspaceNameMessage.setLoading();
-                this.__buttonOk.setEnabled(false);                
+                this.__buttonOk.setEnabled(false);
                 new EP.utils.xhr('workspace/mines/exist',this.__data,this.__onCheck,this).send();
                 this.__previousWorkspaceName = c;
             }
@@ -169,7 +169,7 @@ qx.Class.define("EP.desktop.workspaceNewPopup", {
                 this.__buttonOk.setEnabled(false);
                 return this.__inputWorkspaceNameMessage.setError(res.error);
             }
-            this.__buttonOk.setEnabled(true);   
+            this.__buttonOk.setEnabled(true);
             this.__inputWorkspaceNameMessage.setOk();
         },
 

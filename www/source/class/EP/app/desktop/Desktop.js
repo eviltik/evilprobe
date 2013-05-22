@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.Desktop", {
+qx.Class.define("EP.app.desktop.Desktop", {
 
 	extend : qx.ui.container.Composite,
 
@@ -20,16 +20,16 @@ qx.Class.define("EP.desktop.Desktop", {
 		qx.core.Init.getApplication().__JM = this.__JM;
 
         // Create menu bar
-		this.__menu = new EP.desktop.Menu();
+		this.__menu = new EP.app.desktop.Menu();
 
 		// Create jobs list
-		this.__jobsList = new EP.desktop.JobsList({
+		this.__jobsList = new EP.app.desktop.Jobs({
 			FM:this.__FM,
 			JM:this.__JM
 		})
 
 		// Workspaces container
-		this.__tabViewer = new EP.desktop.workspacesTabViewer();
+		this.__tabViewer = new EP.app.desktop.Workspaces();
 
 		// Create main container
 		var main = new qx.ui.splitpane.Pane("vertical").set({
@@ -41,7 +41,7 @@ qx.Class.define("EP.desktop.Desktop", {
 		main.add(this.__jobsList,1);
 
 		// Create status bar
-		this.__statusBar = new EP.desktop.StatusBar();
+		this.__statusBar = new EP.app.desktop.StatusBar();
 
 		// Add widgets
 		this.add(this.__menu,{left:0,top:0,right:0});

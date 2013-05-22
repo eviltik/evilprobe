@@ -1,43 +1,19 @@
-qx.Class.define("EP.desktop.Menu", {
+qx.Class.define("EP.app.desktop.Menu", {
 
     extend : qx.ui.menubar.MenuBar,
 
     construct:function() {
         this.base(arguments);
-            
-        /*
-        var bar = new qx.ui.container.Composite(new qx.ui.layout.Grow());
-        var buttonPortsScanner = new Zen.ui.toolbar.Button('Ports Scanner');
-        buttonPortsScanner.addListener('execute',function() {
-            if (this.__winPortsScanner) {
-                this.__winPortsScanner.show();
-                return;
-            }
-            var w = new EP.view.portsScannerFormPopup();
-            w.show();
-            this.__winPortsScanner = w;
-            
-        },this);
-
-        var part1 = new qx.ui.toolbar.Part();
-        part1.add(buttonPortsScanner);
-        
-        var tb = new qx.ui.toolbar.ToolBar();
-        tb.setPadding(0);
-        tb.add(part1);
-
-        bar.add(tb);
-        */
 
         this.set({height:32})
         this.add(this.__getMenuWorkspace());
-        this.add(this.__getMenuPreferences());        
+        this.add(this.__getMenuPreferences());
         this.add(this.__getMenuHelp());
 
         qx.event.message.Bus.subscribe('workspaceRecentsReload',this.__workspaceRecentsLoad,this);
 
     },
-    
+
     members: {
 
         __workspaceMenu:null,
@@ -57,13 +33,13 @@ qx.Class.define("EP.desktop.Menu", {
             var m = new Zen.ui.menubar.Button('_Preferences',null,this.__getMenuPreferencesItems());
             this.__preferenceMenu = m;
             return m;
-        },          
+        },
 
         __getMenuHelp:function() {
             var m = new Zen.ui.menubar.Button('_Help',null,this.__getMenuHelpItems());
             this.__helpMenu = m;
             return m;
-        },   
+        },
 
         __getMenuWorkspaceItems:function() {
             var m = new qx.ui.menu.Menu();
@@ -113,7 +89,7 @@ qx.Class.define("EP.desktop.Menu", {
             var btTheme = new Zen.ui.menu.Button("The_me", "icon/22/apps/utilities-color-chooser.png", null,this.__getThemeMenu(),m);
             m.add(btTheme);
             return m;
-        },             
+        },
 
         __getThemeMenu:function() {
             var t1 = new qx.ui.menu.RadioButton("Modern Theme");
@@ -140,15 +116,15 @@ qx.Class.define("EP.desktop.Menu", {
         },
 
         __onWorkspaceNew:function() {
-            new EP.desktop.workspaceNewPopup();
+            new EP.app.popup.workspaceNew();
         },
 
         __onWorkspaceOpen:function() {
-            new EP.desktop.workspaceOpenPopup();
+            new EP.app.popup.workspaceOpen();
         },
 
         __onHelpRessources:function() {
-            new EP.desktop.helpRessourcesPopup();
+            new EP.app.popup.Help();
         },
 
         __onHelpAbout:function() {
@@ -178,13 +154,13 @@ qx.Class.define("EP.desktop.Menu", {
                     me.addListener('execute',this.__onWorkspaceRecent,this);
                     this.__workspaceMenuRecents.add(me);
                 },this);
-                
+
                 this.__loaded = true;
             },this).send();
         },
 
         __onWorkspaceRecent:function(ev) {
-            var w = ev.getTarget().getUserData('workspace');            
+            var w = ev.getTarget().getUserData('workspace');
             qx.event.message.Bus.dispatch(new qx.event.message.Message('workspaceSearchAndOpen',w));
         },
 

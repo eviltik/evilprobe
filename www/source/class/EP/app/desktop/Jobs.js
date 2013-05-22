@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.JobsList", {
+qx.Class.define("EP.app.desktop.Jobs", {
 
     extend : qx.ui.container.Composite,
 
@@ -59,7 +59,7 @@ qx.Class.define("EP.desktop.JobsList", {
         var table = new EP.ui.table.Table({columns:columns}).set({
             showCellFocusIndicator:false,
             statusBarVisible:false,
-            decorator:null            
+            decorator:null
         });
 
         this.__contextMenu = new qx.ui.menu.Menu();

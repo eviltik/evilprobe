@@ -2,7 +2,7 @@
  * @lint ignoreUndefined(CIDR.get)
  */
 
- qx.Class.define("EP.desktop.portsScannerPopup", {
+ qx.Class.define("EP.app.popup.portScanner", {
 
     extend : Zen.ui.window.Window,
 

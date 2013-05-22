@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.helpRessourcesPopup", {
+qx.Class.define("EP.app.popup.Help", {
 
     extend : Zen.ui.window.Window,
 
@@ -25,7 +25,7 @@ qx.Class.define("EP.desktop.helpRessourcesPopup", {
         this.open();
     },
     members:{
-        
+
         __getContent:function() {
             var f = new qx.ui.container.Composite();
             f.setLayout(new qx.ui.layout.VBox(5));
@@ -37,10 +37,10 @@ qx.Class.define("EP.desktop.helpRessourcesPopup", {
             f.add(l);
 
             var l = new qx.ui.basic.Label('<a href="http://www.di.fm/" target="new">Pure zik</a>').set({rich:true});
-            f.add(l);            
+            f.add(l);
 
             var l = new qx.ui.basic.Label('<a href="https://github.com/kissjs/node-mongoskin/tree/master/examples" target="new">Mongoskin</a>').set({rich:true});
-            f.add(l);    
+            f.add(l);
 
             return f;
         }

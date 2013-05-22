@@ -54,10 +54,10 @@ qx.Class.define("EP.Application", {
                blockerOpacity: 0.6
             });
 
-            var loginPopup = new EP.desktop.LoginPopup();
+            var loginPopup = new EP.app.popup.Login();
             loginPopup.addListener('authenticated',function(ev) {
                 this.__session = ev.getData().user.session;
-                this.__desktop = new EP.desktop.Desktop();
+                this.__desktop = new EP.app.desktop.Desktop();
                 this.getRoot().add(this.__desktop,{edge:0});
             },this);
         },

@@ -1,4 +1,4 @@
-qx.Class.define("EP.desktop.portsScannerMenu", {
+qx.Class.define("EP.app.folder.Menu", {
 
     extend : qx.ui.menubar.MenuBar,
 
@@ -7,7 +7,7 @@ qx.Class.define("EP.desktop.portsScannerMenu", {
         this.set({height:32})
         this.add(this.__getMenuWorkspace());
     },
-    
+
     members: {
 
         __workspaceMenu:null,
