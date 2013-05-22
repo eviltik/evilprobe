@@ -11,9 +11,9 @@ var schema = mongoose.Schema({
     tsOpened:   Date,
     tsCreated:  Date,
     type:       String,
-    creator:    { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+    creator:    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     workspace: {
         type: mongoose.Schema.Types.ObjectId,
@@ -122,7 +122,7 @@ Folder.ws.create = function(req,res,next) {
         name:req.body.name,
         tsOpened:Date.now(),
         tsCreated:Date.now(),
-        opened:false,
+        opened:true,
         creator:req.session.user._id,
         workspace:req.params.workspaceId,
         type:req.body.type||''
@@ -167,7 +167,7 @@ Folder.ws.load = function(req,res,next) {
     }
 
     Folder.do.load(args,function(err,folders) {
-        return res.send(folders); 
+        return res.send(folders);
     })
 }
 
@@ -217,7 +217,7 @@ Folder.ws.delete = function(req,res,next) {
     };
 
     Folder.do.delete(args,function(err,folders) {
-        return res.send(folders); 
+        return res.send(folders);
     })
 }
 
@@ -235,7 +235,7 @@ Folder.ws.deleteAll = function(req,res,next) {
     };
 
     Folder.do.delete(args,function(err,folders) {
-        return res.send(folders); 
+        return res.send(folders);
     })
 }
 
