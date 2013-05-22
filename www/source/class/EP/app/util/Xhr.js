@@ -1,4 +1,4 @@
-qx.Class.define("EP.utils.xhr", {
+qx.Class.define("EP.app.util.Xhr", {
 
     extend : qx.core.Object,
 
@@ -11,7 +11,7 @@ qx.Class.define("EP.utils.xhr", {
 
         this.req = new qx.io.request.Xhr(url,'POST');
         if (data) this.req.setRequestData(data);
-        
+
         this.req.addListener("success",this.__onSuccess,this);
         this.req.addListener("fail",this.__onFail,this);
 

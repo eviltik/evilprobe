@@ -1,10 +1,10 @@
-qx.Class.define("EP.utils.jobsManager", {
+qx.Class.define("EP.app.manager.Jobs", {
 
     extend : qx.core.Object,
 
-    construct : function(args) {
+    construct : function() {
         this.base(arguments);
-        this.__FM = args.FM;
+        this.__FM = qx.core.Init.getApplication().__FM;
     },
 
     members:{
@@ -23,7 +23,7 @@ qx.Class.define("EP.utils.jobsManager", {
             var job = this.job;
             var widget = this.widget;
             widget.fireDataEvent('jobMessage',obj);
-            //console.log('onJobMessage',job.jobUid,obj);
+            console.log('onJobMessage',job.jobUid,obj);
         },
 
         __remove : function(jobUid) {

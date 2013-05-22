@@ -12,11 +12,11 @@ qx.Class.define("EP.app.desktop.Desktop", {
 
 
 		// Initialize faye manager
-		this.__FM = new EP.utils.fayeManager();
+		this.__FM = new EP.app.manager.Faye();
 		qx.core.Init.getApplication().__FM = this.__FM;
 
 		// Initialize jobs manager
-		this.__JM = new EP.utils.jobsManager({FM:this.__FM});
+		this.__JM = new EP.app.manager.Jobs();
 		qx.core.Init.getApplication().__JM = this.__JM;
 
         // Create menu bar

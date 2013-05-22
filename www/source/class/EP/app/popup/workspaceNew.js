@@ -134,7 +134,7 @@ qx.Class.define("EP.app.popup.workspaceNew", {
                 this.__data.workspaceName = c;
                 this.__inputWorkspaceNameMessage.setLoading();
                 this.__buttonOk.setEnabled(false);
-                new EP.utils.xhr('workspace/mines/exist',this.__data,this.__onCheck,this).send();
+                new EP.app.util.Xhr('workspace/mines/exist',this.__data,this.__onCheck,this).send();
                 this.__previousWorkspaceName = c;
             }
         },
@@ -152,7 +152,7 @@ qx.Class.define("EP.app.popup.workspaceNew", {
         },
 
         __doSave : function() {
-            new EP.utils.xhr('workspace/mines/create',this.__data,this.__onSave,this).send();
+            new EP.app.util.Xhr('workspace/mines/create',this.__data,this.__onSave,this).send();
         },
 
         __doCancel : function() {

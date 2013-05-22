@@ -1,7 +1,7 @@
 /**
  * @lint ignoreUndefined(Faye.Client)
  */
- qx.Class.define("EP.utils.fayeManager", {
+ qx.Class.define("EP.app.manager.Faye", {
 
     extend : qx.core.Object,
 

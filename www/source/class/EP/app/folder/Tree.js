@@ -142,7 +142,7 @@ qx.Class.define("EP.app.folder.Tree", {
 
         __nodesLoad:function() {
             this.focus();
-            new EP.utils.xhr(this.__getUrl('load'),null,this.__onNodesLoaded,this).send();
+            new EP.app.util.Xhr(this.__getUrl('load'),null,this.__onNodesLoaded,this).send();
         },
 
         __onNodesLoaded:function(err,r) {
@@ -405,7 +405,7 @@ qx.Class.define("EP.app.folder.Tree", {
                 name:data.getName()
             };
 
-            new EP.utils.xhr(this.__getUrl('update'),d,this.__onNodeUpdated,this).send();
+            new EP.app.util.Xhr(this.__getUrl('update'),d,this.__onNodeUpdated,this).send();
         },
 
         __onNodeUpdated:function(err,r) {
@@ -425,7 +425,7 @@ qx.Class.define("EP.app.folder.Tree", {
             if (parentId && parentId != "null") {
                 d.parent = parentId;
             }
-            new EP.utils.xhr(this.__getUrl('create'),d,this.__onNodeCreated,this).send();
+            new EP.app.util.Xhr(this.__getUrl('create'),d,this.__onNodeCreated,this).send();
         },
 
         __onNodeCreated:function(err,r) {
@@ -444,7 +444,7 @@ qx.Class.define("EP.app.folder.Tree", {
                 return;
             }
 
-            new EP.utils.xhr(this.__getUrl('delete'),{_id:item.get_id()},function(err,r) {
+            new EP.app.util.Xhr(this.__getUrl('delete'),{_id:item.get_id()},function(err,r) {
                 parent.getChilds().remove(item);
                 this.refresh();
                 this.getSelection().setItem(0,parent);
@@ -464,7 +464,7 @@ qx.Class.define("EP.app.folder.Tree", {
             var _id = item.get_id();
             if (!_id) return;
 
-            new EP.utils.xhr(this.__getUrl('openClose'),{_id:_id,opened:status},function(err,r) {
+            new EP.app.util.Xhr(this.__getUrl('openClose'),{_id:_id,opened:status},function(err,r) {
                 item.setOpened(status);
             },this).send();
         },

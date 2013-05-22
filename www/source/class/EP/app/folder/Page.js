@@ -66,7 +66,7 @@
         },
 
         __onMenuDelete:function() {
-            new EP.utils.xhr('workspace/mines/delete',{_id:this.__workspaceData._id},function(err,r) {
+            new EP.app.util.Xhr('workspace/mines/delete',{_id:this.__workspaceData._id},function(err,r) {
                 this.__tabViewer.setSelection(0);
                 this.destroy();
             },this).send();

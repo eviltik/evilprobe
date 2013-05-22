@@ -64,7 +64,7 @@ qx.Class.define("EP.app.popup.workspaceOpen", {
             var w = this.__workspaceInputName.getValue();
             var data = {};
             if (w) data.q = w;
-            new EP.utils.xhr('workspace/search',data,this.__onSearch,this).send();
+            new EP.app.util.Xhr('workspace/search',data,this.__onSearch,this).send();
         },
 
         __onSearch:function(err,r) {

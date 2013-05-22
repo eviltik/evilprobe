@@ -135,7 +135,7 @@ qx.Class.define("EP.app.desktop.Menu", {
 
             // Server side: load array of last opened workspaces
 
-            new EP.utils.xhr('workspace/mines/recent',null,function(err,r) {
+            new EP.app.util.Xhr('workspace/mines/recent',null,function(err,r) {
 
                 this.__workspaceMenuRecents.removeAll();
 

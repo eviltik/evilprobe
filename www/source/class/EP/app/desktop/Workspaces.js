@@ -57,7 +57,7 @@ qx.Class.define("EP.app.desktop.Workspaces", {
             if (!d||!d._id) return;
 
             // Server side : set current workspace has "not opened"
-            new EP.utils.xhr('workspace/mines/close',{_id:d._id}).send();
+            new EP.app.util.Xhr('workspace/mines/close',{_id:d._id}).send();
             qx.event.message.Bus.dispatch(new qx.event.message.Message('workspaceRecentsReload'));
 
         },
@@ -74,7 +74,7 @@ qx.Class.define("EP.app.desktop.Workspaces", {
             if (!currentTab) return;
             var currentData = currentTab.getUserData('workspace');
             if (currentData && currentData._id) {
-                new EP.utils.xhr('workspace/mines/select',{selectId:currentData._id}).send();
+                new EP.app.util.Xhr('workspace/mines/select',{selectId:currentData._id}).send();
             }
         },
 
@@ -114,7 +114,7 @@ qx.Class.define("EP.app.desktop.Workspaces", {
                 data = {filters:JSON.stringify(arr)}
             }
 
-            new EP.utils.xhr(url,data,function(err,r) {
+            new EP.app.util.Xhr(url,data,function(err,r) {
 
                 if (err) {
                     this.__loaded = true;

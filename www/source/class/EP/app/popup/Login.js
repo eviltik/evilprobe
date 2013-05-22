@@ -31,7 +31,7 @@ qx.Class.define("EP.app.popup.Login", {
         this.open();
 
         qx.lang.Function.delay(function() {
-            new EP.utils.xhr(this.__urlAuthCheck,null,this.__onAuthCheck,this).send();
+            new EP.app.util.Xhr(this.__urlAuthCheck,null,this.__onAuthCheck,this).send();
         },500,this);
 
     },
@@ -199,7 +199,7 @@ qx.Class.define("EP.app.popup.Login", {
 
         __doLogin : function() {
             if (!this.__isValid()) return;
-            new EP.utils.xhr(this.__urlAuthLogin,this.__data,this.__onLogin,this).send();
+            new EP.app.util.Xhr(this.__urlAuthLogin,this.__data,this.__onLogin,this).send();
         },
 
         __onLogin : function(err,res) {
