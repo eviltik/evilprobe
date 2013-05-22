@@ -10,8 +10,9 @@
         "done"   : "qx.event.type.Event"
     },
 
-    construct : function(args) {
+    construct : function(args,meta) {
         this.__args = args;
+        this.__meta = meta;
 
         this.base(arguments);
 
@@ -50,8 +51,8 @@
                 value:'122.99.128.0/17'
             })
 
-            if (this.__args.value) {
-                input.setValue(this.__args.value);
+            if (this.__meta && this.__meta.value) {
+                input.setValue(this.__meta.value);
             }
 
             var t = new qx.ui.tooltip.ToolTip("Type an IP Address or a CIDR Range.",null);
@@ -160,10 +161,7 @@
             job.jobCmd = 'portscan';
             job.jobTitle = 'Scanning '+this.inputCidr.getValue();
             job.jobUid = Date.now();
-            job.metadata = {
-                workspaceId:this.__args.workspaceId,
-                parent:this.__args.folderId
-            }
+            job.metadata = this.__meta;
 
             // Command arguments
             job.args = {};
@@ -174,6 +172,7 @@
             this.checkboxResolveDns.getValue() ? job.args.reverse = true : job.args.reverse = false;
 
             // Ask the server to start the job
+            console.log(job);
             qx.core.Init.getApplication().getJobsManager().push(job);
 
             this.fireEvent('done');
