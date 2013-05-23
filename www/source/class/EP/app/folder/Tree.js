@@ -6,6 +6,7 @@ qx.Class.define("EP.app.folder.Tree", {
         nodeCreated: "qx.event.type.Data",
         nodeUpdated: "qx.event.type.Data",
         nodeDeleted: "qx.event.type.Data",
+        nodeEmptied: "qx.event.type.Data",
         jobMessage: "qx.event.type.Data"
     },
 
@@ -71,6 +72,7 @@ qx.Class.define("EP.app.folder.Tree", {
         this.addListener('nodeUpdated',this.__nodeUpdated,this);
         this.addListener('nodeCreated',this.__nodeCreated,this);
         this.addListener('nodeDeleted',this.__nodeDeleted,this);
+        this.addListener('nodeEmptied',this.__nodeEmptied,this);
         this.addListener('open',this.__nodeOpened,this);
         this.addListener('close',this.__nodeClosed,this);
 
@@ -105,14 +107,19 @@ qx.Class.define("EP.app.folder.Tree", {
             var node = JSON.parse(JSON.stringify(ev.getData().message.node));
             var parentId = node.parent;
             delete node.parent;
+            if (node.type == 'host' || node.type == 'network') {
+                node.childs = [];
+            }
             var node = qx.data.marshal.Json.createModel(node,false);
             this.__addNode(node,parentId);
         },
 
         __addNode:function(node,parentId) {
-            if (this.__nodeMap[parentId] && this.__nodeMap[parentId].getChilds) {
+            if (this.__nodeMap[parentId]) {
                 this.__nodeMap[parentId].getChilds().push(node);
-                this.__configureNode(node,this.__nodeMap[parentId]);
+                this.__configureNode(this.__nodeMap[parentId]);
+            } else {
+                console.log('parent '+parentId+' not found for new child '+node.getName());
             }
         },
 
@@ -151,7 +158,10 @@ qx.Class.define("EP.app.folder.Tree", {
                 this.openNode(node);
             }
 
-            this.__nodeMap[node.get_id()] = node;
+            if (!this.__nodeMap[node.get_id()]) {
+                //console.log('nodeMap: adding ',node.get_id(),node.getName());
+                this.__nodeMap[node.get_id()] = node;
+            }
 
             // got childs ?
             if (!node.getChilds) {
@@ -200,39 +210,40 @@ qx.Class.define("EP.app.folder.Tree", {
         },
 
         __onTreeClick:function(ev) {
-            var c = ev.getTarget().classname;
+
+            var c = ev.getTarget();
             if (!c) return;
 
-            if (c == 'qx.ui.virtual.core.Pane') {
-
-                // qx.ui.virtual.core.Pane
+            if (!(c instanceof qx.ui.tree.VirtualTreeItem)) {
                 // click received from empty tree area
                 // let's reset selection
-                this.getSelection().removeAll();
-
-            } else if (c == 'qx.ui.tree.VirtualTreeItem') {
-                var node = this.getSelection().getItem(0);
-                if (!node) return;
-
-                if (node != this.__previousNodeClicked) {
-                    // Prevent edit a node which was
-                    // not previously selected
-                    this.__previousNodeClicked = node;
-                    return;
-                }
-                if (node.getUserData('clickTimer')) {
-                    var diff = Date.now()-node.getUserData('clickTimestamp');
-                    // Double click (open node, ignoring)
-                    if (diff <= 200) return;
-                    // Edit node
-                    return this.__nodeEdit();
-                }
-                node.setUserData('clickTimestamp',Date.now());
-                node.setUserData('clickTimer',qx.lang.Function.delay(function() {
-                    node.setUserData('clickTimer',null);
-                    node.setUserData('clickTimestamp',null);
-                },1000),this);
+                return this.getSelection().removeAll();
             }
+
+            var node = this.getSelection().getItem(0);
+            if (!node) return;
+
+            if (node != this.__previousNodeClicked) {
+                // Prevent edit a node which was
+                // not previously selected
+                this.__previousNodeClicked = node;
+                return;
+            }
+
+            if (node.getUserData('clickTimer')) {
+                var diff = Date.now()-node.getUserData('clickTimestamp');
+                // Double click (open node, ignoring)
+                if (diff <= 200) return;
+                // Edit node
+                return this.__nodeEdit();
+            }
+
+            node.setUserData('clickTimestamp',Date.now());
+            node.setUserData('clickTimer',qx.lang.Function.delay(function() {
+                node.setUserData('clickTimer',null);
+                node.setUserData('clickTimestamp',null);
+            },1000),this);
+
         },
 
         __onTreeKeyPress:function(ev) {
@@ -251,6 +262,12 @@ qx.Class.define("EP.app.folder.Tree", {
 
         __onTreeContextMenu:function(ev) {
 
+            if (!(ev.getTarget() instanceof qx.ui.tree.VirtualTreeItem)) {
+                // click received from empty tree area
+                // let's reset selection
+                this.getSelection().removeAll();
+            }
+
             var type = '';
             var item = this.getSelection().getItem(0);
             if (item) type = item.getType();
@@ -258,7 +275,7 @@ qx.Class.define("EP.app.folder.Tree", {
 
             var contextMenu = new qx.ui.menu.Menu();
 
-            if (type == 'host') {
+            if (type == 'host' || type == 'network') {
 
                 var menuPortScan = new qx.ui.menu.Button('TCP ports scan','EP/scan.png');
                 menuPortScan.addListener('execute',function() {
@@ -270,30 +287,43 @@ qx.Class.define("EP.app.folder.Tree", {
                     };
                     new EP.app.popup.portScanner(this,meta).open();
                 },this);
+
                 contextMenu.add(menuPortScan);
+                contextMenu.add(new qx.ui.menu.Separator());
+
 
             } else {
                 var menuNewFolder = new qx.ui.menu.Button("New folder",'EP/folder_opened.png');
-                menuNewFolder.addListener('execute',this.__onMenuNewFolder,this);
-
                 var menuNewNetwork = new qx.ui.menu.Button("New network",'EP/network.png');
-                menuNewNetwork.addListener('execute',this.__onMenuNewNetwork,this);
-
                 var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.gif');
+
+                menuNewFolder.addListener('execute',this.__onMenuNewFolder,this);
+                menuNewNetwork.addListener('execute',this.__onMenuNewNetwork,this);
                 menuNewHost.addListener('execute',this.__onMenuNewHost,this);
-
-                var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
-                menuEdit.addListener('execute',this.__nodeEdit,this);
-
-                var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
-                menuDelete.addListener('execute',this.__onMenuDelete,this);
 
                 contextMenu.add(menuNewFolder);
                 contextMenu.add(menuNewNetwork);
                 contextMenu.add(menuNewHost);
                 contextMenu.add(new qx.ui.menu.Separator());
+
+            }
+
+            var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
+            var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
+            var menuEmpty = new qx.ui.menu.Button('Empty','EP/empty.png');
+
+            menuEdit.addListener('execute',this.__nodeEdit,this);
+            menuDelete.addListener('execute',this.__onMenuDelete,this);
+            menuEmpty.addListener('execute',this.__onMenuEmpty,this);
+
+            if (item && item.getChilds && item.getChilds().length == 0) {
+                menuEmpty.setEnabled(false);
+            }
+
+            if (item) {
                 contextMenu.add(menuEdit);
                 contextMenu.add(menuDelete);
+                contextMenu.add(menuEmpty);
             }
 
             contextMenu.placeToMouse(ev);
@@ -323,6 +353,10 @@ qx.Class.define("EP.app.folder.Tree", {
 
         __onMenuDelete:function() {
             this.__nodeDeleteConfirm();
+        },
+
+        __onMenuEmpty:function() {
+            this.__nodeEmptyConfirm();
         },
 
         __nodeCreate:function(type) {
@@ -358,21 +392,58 @@ qx.Class.define("EP.app.folder.Tree", {
 
         __nodeDeleteConfirm:function() {
             // TODO: nice popup
-            if (window.confirm("Delete selection ?")) {
+            if (window.confirm("Delete current selection ?")) {
                 return this.__nodeDelete();
             }
         },
 
+        __nodeEmptyConfirm:function() {
+            // TODO: nice popup
+            if (window.confirm("Empty current selection ?")) {
+                return this.__nodeEmpty();
+            }
+        },
+
         __nodeDelete:function() {
-            if (!this.getSelection().getItem(0)) return;
+            if (!this.getSelection().getItem(0)) {
+                // no selection
+                return;
+            }
 
             var item = this.getSelection().getItem(0);
-            if (!item) return;
+            if (!item) {
+                // selection is not an item ????
+                return;
+            }
 
             var parentNode = item.getUserData('parent');
-            if (!parentNode) return;
+            if (!parentNode) {
+                // root ???
+                return;
+            }
 
             this.fireDataEvent('nodeDeleted',item);
+        },
+
+        __nodeEmpty:function() {
+            if (!this.getSelection().getItem(0)) {
+                // no selection
+                return;
+            }
+
+            var item = this.getSelection().getItem(0);
+            if (!item) {
+                // selection is not an item ????
+                return;
+            }
+
+            var parentNode = item.getUserData('parent');
+            if (!parentNode) {
+                // root ???
+                return;
+            }
+
+            this.fireDataEvent('nodeEmptied',item);
         },
 
         __nodeEdit:function(node) {
@@ -393,7 +464,7 @@ qx.Class.define("EP.app.folder.Tree", {
                 allowGrowX:true
             });
 
-            popup.addListenerOnce("disappear", function(e){
+            popup.addListenerOnce("disappear", function(e) {
                 this.__editing = false;
                 popup.destroy();
                 input.destroy();
@@ -407,13 +478,11 @@ qx.Class.define("EP.app.folder.Tree", {
                 width:qxnode.getBounds().width - cal - (padding*2)
             });
 
-            input.addListener('keypress',function(ev) {
-                if (ev.getKeyIdentifier() == 'Escape') {
-                    popup.hide();
-                    this.fireDataEvent('nodeDeleted',item);
-                }
-                if (ev.getKeyIdentifier() == 'Enter') {
-                    if (item.getName() == input.getValue()) {
+            var onInputEvent = function(ev) {
+
+                var blured = ev.getType() == 'blur';
+                if (blured || ev.getKeyIdentifier() == 'Enter') {
+                    if (!blured && (item.getName() == input.getValue())) {
                         popup.hide();
                         return;
                     }
@@ -424,9 +493,23 @@ qx.Class.define("EP.app.folder.Tree", {
                     } else {
                         this.fireDataEvent('nodeCreated',item);
                     }
-                    popup.hide();
+                    return popup.hide();
                 }
-            },this);
+
+                if (ev.getKeyIdentifier() == 'Escape') {
+                    var parent = item.getUserData('parent');
+                    if (item.get_id() === null) {
+                        // was a fresh created node
+                        parent.getChilds().remove(item);
+                        this.refresh();
+                        this.getSelection().setItem(0,parent);
+                    }
+                    return popup.hide();
+                }
+            }
+
+            input.addListener('keypress',onInputEvent,this);
+            input.addListener('blur',onInputEvent,this);
 
             input.setUserData('item',item);
             input.selectAllText();
@@ -454,39 +537,49 @@ qx.Class.define("EP.app.folder.Tree", {
         },
 
         __nodeCreated:function(ev) {
-            var data = ev.getData();
-            var parent = data.getUserData('parent');
+            var node = ev.getData();
+            var parent = node.getUserData('parent');
             var parentIsRoot = parent.getType() === 'root';
             var parentId = parent.get_id();
 
             var d = {};
-            d.name = data.getName()
-            d.type = data.getType()||'';
+            d.name = node.getName()
+            d.type = node.getType()||'';
 
             if (parentId && parentId != "null") {
                 d.parent = parentId;
             }
-            new EP.app.util.Xhr(this.__getUrl('create'),d,this.__onNodeCreated,this).send();
+            new EP.app.util.Xhr(this.__getUrl('create'),d,this.__onNodeCreated,node).send();
         },
 
         __onNodeCreated:function(err,r) {
             if (!r.ok && r.error) return dialog.Dialog.error(r.error);
-            this.getSelection().getItem(0).set_id(r.node._id);
+            // scope is created node
+            this.set_id(r.node._id);
         },
 
         __nodeDeleted:function(ev) {
             var item = ev.getData();
             var parent = item.getUserData('parent');
-            if (item.get_id() === null) {
-                // was a fresh created node
-                parent.getChilds().remove(item);
-                this.refresh();
-                this.getSelection().setItem(0,parent);
-                return;
-            }
 
             new EP.app.util.Xhr(this.__getUrl('delete'),{_id:item.get_id()},function(err,r) {
                 parent.getChilds().remove(item);
+                this.refresh();
+                this.getSelection().setItem(0,parent);
+            },this).send();
+        },
+
+        __nodeEmptied:function(ev) {
+            var item = ev.getData();
+            var parent = item;
+
+            new EP.app.util.Xhr(this.__getUrl('empty'),{_id:item.get_id()},function(err,r) {
+                while (parent.getChilds().length) {
+                    var id = parent.getChilds().getItem(0).get_id();
+                    parent.getChilds().remove(parent.getChilds().getItem(0));
+                    //console.log('nodeMap: deleting '+id);
+                    delete this.__nodeMap[id];
+                }
                 this.refresh();
                 this.getSelection().setItem(0,parent);
             },this).send();
