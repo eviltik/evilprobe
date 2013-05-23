@@ -97,6 +97,7 @@
                 filter:/[0-9,]/,
                 invalidMessage:'Single or multiple port',
                 value:'21,22,23,79,80,110,113,119,143,443,1002,1720,5000,5900,8080'
+                //value:'21,23'
             })
 
             /*
