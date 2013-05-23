@@ -72,6 +72,7 @@ var init = function() {
     app.all('/ws/folder/:workspaceId/update',Folder.ws.update);
     app.all('/ws/folder/:workspaceId/delete',Folder.ws.delete);
     app.all('/ws/folder/:workspaceId/deleteAll',Folder.ws.deleteAll);
+    app.all('/ws/folder/:workspaceId/empty',Folder.ws.empty);
     app.all('/ws/folder/:workspaceId/openClose',Folder.ws.openClose);
     app.listen(global.port||80);
 }

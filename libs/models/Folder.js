@@ -221,6 +221,29 @@ Folder.ws.delete = function(req,res,next) {
     })
 }
 
+Folder.ws.empty = function(req,res,next) {
+    log.debug('Folder.ws.empty '+req.params.workspaceId+'/'+JSON.stringify(req.body));
+
+    if (!req.body._id) {
+        return res.send({ok:false,error:'no node specified'});
+    }
+
+    var args = {
+        filters:{
+            path:{$regex:req.body._id+'.+'},
+            creator:req.session.user._id,
+            workspace:req.params.workspaceId
+        },
+        options:{
+            multi:true
+        }
+    };
+
+    Folder.do.delete(args,function(err,folders) {
+        return res.send(folders);
+    })
+}
+
 Folder.ws.deleteAll = function(req,res,next) {
     log.debug('Folder.ws.delete '+req.params.workspaceId+'/'+JSON.stringify(req.body));
 
