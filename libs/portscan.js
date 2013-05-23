@@ -5,6 +5,7 @@ var db = require('./db');
 var concurrency = 800;
 var cmd = '/home/evil/portscanner/scan.js';
 var Folder = db.model('Folder');
+var log = require('../libs/logger').log;
 
 /* portscan abstract handler */
 var portscan = function(opts) {
@@ -12,6 +13,7 @@ var portscan = function(opts) {
     var jobTitle = opts.jobTitle;
     var args = opts.args;
     var jobUid = opts.jobUid;
+    var nodesCache = {};
 
     var cmdArgs = [];
     jsUtils.objectForEach(args,function(arg,value) {
@@ -69,40 +71,92 @@ var portscan = function(opts) {
 
     global.bayeuxClient.publish('/jobs/status',[job]);
 
-    // STDOUT
-    proc.stdout.on('data',function(data) {
-        data.toString().split('\n').forEach(function(l) {
-            if (!l) return;
-            l = JSON.parse(l);
-            if (l) {
-                if (l._message||l._error) {
-                    return global.jobManager.update(jobUid,l);
-                }
+    var defaultNodeProperties = {
+        workspace:opts.metadata.workspaceId,
+        creator:opts.userId
+    }
 
-                var o = {
-                    workspace:opts.metadata.workspaceId,
-                    parent:opts.metadata.parent,
-                    creator:opts.userId
-                }
-                if (opts.metadata.type == 'host') {
-                    o.name = l.port;
-                    o.type = 'port';
-                    o.opened = true;
-                }
-                Folder.do.create(o,function(err,r) {
-                    if (err) throw new err;
-                    l.node = r;
-                    bayeuxClient.publish('/jobs/'+jobUid,l);
+    var insertPort = function(metadata,parentId,result)  {
+        var nodeProps = JSON.parse(JSON.stringify(defaultNodeProperties));
+        nodeProps.parent = parentId;
+        nodeProps.opened = true;
+        nodeProps.type = 'port';
+        nodeProps.name = result.port;
 
-                    l.jobUid = jobUid;
-                    l.ts = Date.now();
-                    console.log('< '+jobUid+': ',JSON.stringify(l));
-                });
-
-
-                //console.log(o,l);
-            }
+        Folder.do.create(nodeProps,function(err,r) {
+            if (err) throw new err;
+            result.node = r;
+            bayeuxClient.publish('/jobs/'+jobUid,result);
+            //l.jobUid = jobUid;
+            //l.ts = Date.now();
+            console.log('< '+jobUid+': ',JSON.stringify(result));
         });
+    }
+
+    var insertHost = function(metadata,parentId,result) {
+        if (!nodesCache[result.ip]) {
+            var nodeProps = JSON.parse(JSON.stringify(defaultNodeProperties));
+            nodeProps.parent = parentId;
+            nodeProps.opened = true;
+            nodeProps.type = 'host';
+            nodeProps.name = result.ip;
+
+            Folder.do.create(nodeProps,function(err,r) {
+                if (err) throw new err;
+                result.node = r;
+                bayeuxClient.publish('/jobs/'+jobUid,result);
+
+                insertPort(metadata,r._id,result);
+                nodesCache[result.ip] = r._id;
+                //console.log('< '+jobUid+': ',JSON.stringify(result));
+            });
+        } else {
+            insertPort(metadata,nodesCache[result.ip],result);
+        }
+    }
+
+    var parseLine = function(line,b,c) {
+
+        // Empty line, exiting
+        if (!line) return;
+
+        // Parse json object
+        var obj = JSON.parse(line);
+
+
+        // Empty object, exiting
+        if (!obj) {
+            return log.error('Empty object parsed from string '+line);
+        }
+
+        if (obj._message||obj._error) {
+            /* If _message populated, scan is in progress,
+             * but nothing interesting at the moment, except
+             * thep progress of the scan
+             *
+             * If _error populated, an error occured while
+             * scanning
+             *
+             * In both case, notify jobManager for update and
+             * return immedialy,
+             *
+             */
+            return global.jobManager.update(jobUid,obj);
+        }
+
+        if (opts.metadata.type == 'host') {
+
+            insertPort(opts.metadata,opts.metadata.parent,obj);
+
+        } else if (opts.metadata.type == 'network') {
+
+            insertHost(opts.metadata,opts.metadata.parent,obj);
+
+        }
+    }
+
+    proc.stdout.on('data',function(data) {
+        data.toString().split('\n').forEach(parseLine);
     });
 
     proc.on('close',function() {
