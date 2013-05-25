@@ -18,7 +18,7 @@ qx.Class.define("EP.app.popup.Help", {
     		modal:false, // If true, key events will not be handled by textFields
             fadeInAppear:true,
             fadeOutClose:true,
-            center:true
+            centered:true
     	})
 
         this.add(this.__getContent());

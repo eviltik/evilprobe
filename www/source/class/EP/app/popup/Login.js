@@ -23,7 +23,7 @@ qx.Class.define("EP.app.popup.Login", {
     		modal:true, // If true, key events will not be handled by textFields
             fadeInAppear:true,
             fadeOutClose:true,
-            center:true
+            centered:true
     	})
 
         this.add(this.__getWait());

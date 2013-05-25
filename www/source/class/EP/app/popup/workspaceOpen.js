@@ -13,13 +13,14 @@ qx.Class.define("EP.app.popup.workspaceOpen", {
     		showMaximize:true,
             showClose:true,
     		margin:0,
-    		width:800,
+    		relativeWidth:'50%',
+            relativeHeight:'80%',
     		caption:'Open Workspace',
     		layout:new qx.ui.layout.Grow,
     		modal:true,
             fadeInAppear:true,
             fadeOutClose:true,
-            center:true
+            centered:true
     	})
 
         this.add(this.__getForm());

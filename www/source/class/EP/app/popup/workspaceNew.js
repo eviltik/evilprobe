@@ -19,7 +19,7 @@ qx.Class.define("EP.app.popup.workspaceNew", {
     		modal:true,
             fadeInAppear:true,
             fadeOutClose:true,
-            center:true
+            centered:true
     	})
 
         this.add(this.__getForm());

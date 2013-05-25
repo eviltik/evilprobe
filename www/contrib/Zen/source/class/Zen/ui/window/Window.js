@@ -8,8 +8,16 @@ qx.Class.define("Zen.ui.window.Window", {
         fadeOutClose:{
             init:false
         },
-        center:{
+        centered:{
             init:true
+        },
+        relativeWidth:{
+            init:null,
+            nullable:true
+        },
+        relativeHeight:{
+            init:null,
+            nullable:true
         }
     },
 
@@ -17,14 +25,30 @@ qx.Class.define("Zen.ui.window.Window", {
 
     	this.base(arguments);
 
-        if (this.getCenter()) {
-            this.addListener('appear',function(e) {
-                this.center();
-                if (this.getFadeInAppear()) {
-                    this.fadeIn(150);
+        this.__desktop = qx.core.Init.getApplication().getRoot();
+
+        this.addListener('appear',function(e) {
+            if (this.getFadeInAppear()) {
+                this.fadeIn(150);
+            }
+            if (this.getRelativeWidth()) {
+                this.setMinWidth(400);
+                this.setRelativeW();
+                if (!this.__resizeListener) {
+                    this.__resizeListener = this.__desktop.addListener('resize',this.setRelative,this);
                 }
-            });
-        }
+            }
+            if (this.getRelativeHeight()) {
+                this.setMinHeight(200);
+                this.setRelativeH();
+                if (!this.__resizeListener) {
+                    this.__resizeListener = this.__desktop.addListener('resize',this.setRelative,this);
+                };
+            }
+            if (this.getCentered()) {
+                qx.lang.Function.delay(this.center,1,this);
+            }
+        });
 
         if (this.getFadeOutClose()) {
             this.addListener('beforeClose',function(e) {
@@ -35,15 +59,43 @@ qx.Class.define("Zen.ui.window.Window", {
     },
 
     members:{
+        __desktop:null,
+        __resizeListener:null,
 
         __effectShake : {
-            duration : 200, 
-            timing: "linear", 
+            duration : 200,
+            timing: "linear",
             repeat: 2,
             keyFrames : {
-                25 : {translate : ["-30px",null]},           
+                25 : {translate : ["-30px",null]},
                 75 : {translate : ["+30px",null]}
             }
+        },
+
+        setRelative:function() {
+            this.setRelativeW();
+            this.setRelativeH();
+            if (this.getCentered()) {
+                qx.lang.Function.delay(this.center,1,this);
+            }
+        },
+
+        setRelativeW : function() {
+            var rw = this.getRelativeWidth();
+            if (!rw.match(/%/)) {
+                return qx.log.Logger.error(Zen.ui.window.Window,"Relative width "+rw+" doesn't contain '%'");
+            }
+            rw = Math.round((parseInt(rw) * qx.bom.Document.getWidth())/100);
+            this.setWidth(rw);
+        },
+
+        setRelativeH : function() {
+            var rh = this.getRelativeHeight();
+            if (!rh.match(/%/)) {
+                return qx.log.Logger.error(Zen.ui.window.Window,"Relative width "+rh+" doesn't contain '%'");
+            }
+            rh = Math.round((parseInt(rh) * qx.bom.Document.getHeight())/100);
+            this.setHeight(rh);
         },
 
         animFadeIn:function() {

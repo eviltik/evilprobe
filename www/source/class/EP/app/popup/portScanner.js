@@ -22,7 +22,7 @@
             caption:'Ports Scanner',
             layout:new qx.ui.layout.VBox(),
             modal:true,
-            center:true
+            centered:true
         })
 
         this.add(this.getInputCidr());
