@@ -7,6 +7,7 @@ var cmd = '/home/evil/portscanner/scan.js';
 var Folder = db.model('Folder');
 var log = require('../libs/logger').log;
 
+
 /* portscan abstract handler */
 var portscan = function(opts) {
 
@@ -78,18 +79,34 @@ var portscan = function(opts) {
 
     var insertPort = function(metadata,parentId,result)  {
         var nodeProps = JSON.parse(JSON.stringify(defaultNodeProperties));
+
+        var portName = 'unknow';
+
+        if (knownPorts[result.port]) {
+            portName = knownPorts[result.port].name||portName;
+        }
+
         nodeProps.parent = parentId;
         nodeProps.opened = true;
         nodeProps.type = 'port';
         nodeProps.name = result.port;
+        nodeProps.data = {
+            banner:result.response,
+            portName: portName,
+            protocol: 'tcp'
+        }
 
         Folder.do.create(nodeProps,function(err,r) {
             if (err) throw new err;
-            result.node = r;
-            bayeuxClient.publish('/jobs/'+jobUid,result);
-            //l.jobUid = jobUid;
-            //l.ts = Date.now();
-            console.log('< '+jobUid+': ',JSON.stringify(result));
+            Folder.findOne(r)
+                .populate('creator','login')
+                .exec(function(err,r) {
+                    result.node = Folder.cleanItem(r);
+                    bayeuxClient.publish('/jobs/'+jobUid,result);
+                    //l.jobUid = jobUid;
+                    //l.ts = Date.now();
+                    console.log('< '+jobUid+': ',JSON.stringify(result));
+                    });
         });
     }
 
@@ -103,12 +120,16 @@ var portscan = function(opts) {
 
             Folder.do.create(nodeProps,function(err,r) {
                 if (err) throw new err;
-                result.node = r;
-                bayeuxClient.publish('/jobs/'+jobUid,result);
-
-                insertPort(metadata,r._id,result);
-                nodesCache[result.ip] = r._id;
-                //console.log('< '+jobUid+': ',JSON.stringify(result));
+                Folder
+                    .findOne(r)
+                    .populate('creator','login')
+                    .exec(function(err,r) {
+                        result.node = Folder.cleanItem(r);
+                        bayeuxClient.publish('/jobs/'+jobUid,result);
+                        insertPort(metadata,r._id,result);
+                        nodesCache[result.ip] = r._id;
+                        //console.log('< '+jobUid+': ',JSON.stringify(result));
+                    });
             });
         } else {
             insertPort(metadata,nodesCache[result.ip],result);
