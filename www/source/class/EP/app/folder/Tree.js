@@ -7,12 +7,9 @@ qx.Class.define("EP.app.folder.Tree", {
     },
 
     construct:function(workspaceData) {
-
-        this.base(arguments);
         this.__workspaceData = workspaceData;
-
+        this.base(arguments);
         this.addListener('jobMessage',this.onJobMessage,this);
-
     },
 
     members:{
@@ -48,8 +45,8 @@ qx.Class.define("EP.app.folder.Tree", {
             return r;
         },
 
-        getUrl:function(more) {
-            return 'folder/'+this.__workspaceData._id+'/'+more;
+        getUrl:function(action) {
+            return 'folder/'+this.__workspaceData._id+'/'+action;
         },
 
         onJobMessage:function(ev) {
