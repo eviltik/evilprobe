@@ -27,13 +27,6 @@ qx.Class.define("EP.app.desktop.Jobs", {
         this.add(tb);
         */
 
-        // --------------------------------------------------------------------
-        // Table
-        // --------------------------------------------------------------------
-
-        // Mixin for cell ontext menu
-        //qx.Class.include(qx.ui.table.Table, qx.ui.table.MTableContextMenu);
-
         var barRenderer = new canvascell.Renderer(
             new canvascell.plotter.Bar({
                 fill   : '#280',
@@ -69,11 +62,9 @@ qx.Class.define("EP.app.desktop.Jobs", {
         },this);
         //table.setDataRowRenderer(new EP.ui.table.rowrenderer.Jobs(table));
 
-
         this.__tableJobs = table;
         this.add(table,{flex:1});
         this.manageJobs();
-        this.self = this;
     },
     members:{
         __contextMenu : null,
