@@ -1,12 +1,15 @@
 var log = require('../logger.js').log;
 var mongoose =  require('mongoose');
 var tree = require('mongoose-tree');
-//mongoose.set('debug', true)
+mongoose.set('debug', true);
 
 
 /* schema */
 var schema = mongoose.Schema({
-    name:       String,
+    name:       {
+        type:String,
+        trim:true
+    },
     opened:     Boolean,
     tsOpened:   Date,
     tsCreated:  Date,
@@ -18,11 +21,12 @@ var schema = mongoose.Schema({
     workspace: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Workspace'
-    }
+    },
+    data: mongoose.Schema.Types.Mixed
 })
 
 schema.plugin(tree);
-schema.index({name:1});
+schema.index({name:1,data:1});
 
 
 /* model */
@@ -30,20 +34,46 @@ var Folder = mongoose.model('Folder',schema);
 Folder.ws = {};
 Folder.do = {};
 
+Folder.cleanItem = function(item) {
+    item = JSON.parse(JSON.stringify(item));
+    if (item.creator) {
+        item.creator = item.creator.login || 'Unknow';
+    }
+    delete item.path;
+    return item;
+}
 
 Folder.do.load = function(args,cb) {
     var filters = args.filters||{name:'root'};
-    var columns = args.columns||null;
+    var columns = args.columns||'_id name path';
     var options = args.options||{};
 
-    if (columns && !columns.match(/path/)) {
-        // mandatory for recursive children search (mongoose-tree plugin)
-        columns+=' path';
+    // Needed because options are dynamicaly
+    // updated by mongoose or mongoose-tree
+    var optionsO = JSON.parse(JSON.stringify(options));
+
+    if (columns) {
+        if (!columns.match(/path/)) {
+            // mandatory for recursive children search (mongoose-tree plugin)
+            columns+=' path';
+        }
     }
 
     var doExec = function(err,r) {
 
         if (!r||!r.length) return cb(null,{});
+
+        var cleanItems = function(r) {
+            if (r.length) {
+                r.forEach(function(item,i) {
+                    if (item.childs && item.childs.length) {
+                        r[i].childs = cleanItems(item.childs);
+                    }
+                    r[i] = Folder.cleanItem(item);
+                });
+            }
+            return r;
+        }
 
         var fs = [];
         var i = 0;
@@ -55,7 +85,7 @@ Folder.do.load = function(args,cb) {
             var args = {
                 filters:filters,
                 columns:columns,
-                options:options,
+                options:optionsO,
                 minLevel:2,
                 recursive:true,
                 emptyChilds:true
@@ -65,7 +95,10 @@ Folder.do.load = function(args,cb) {
             ff.getChildrenTree(args,function(err,c) {
                 f.childs = c;
                 fs.push(f);
-                if (i == r.length-1) return cb(null,fs);
+                if (i == r.length-1) {
+                    fs = cleanItems(fs);
+                    return cb(null,fs);
+                }
                 i++;
             })
         });
@@ -73,7 +106,7 @@ Folder.do.load = function(args,cb) {
 
     Folder
         .find(filters,columns,options)
-        //.populate('creator','login')
+        .populate('creator','login')
         .exec(doExec);
 }
 
@@ -127,6 +160,7 @@ Folder.ws.create = function(req,res,next) {
         workspace:req.params.workspaceId,
         type:req.body.type||''
     }
+
     if (req.body.parent) {
         w.parent = req.body.parent;
     }
@@ -151,7 +185,7 @@ Folder.ws.load = function(req,res,next) {
             workspace:req.params.workspaceId,
             parent:null
         },
-        columns:'_id name creator type opened',
+        columns:'_id name creator type opened data',
         options:{}
     };
 
