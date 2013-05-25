@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
-// Node libs
-var spawn = require('child_process').spawn;
-var db = require('./libs/db');
-var argv = require('optimist').argv;
 var log = require('./libs/logger').log;
+log.info('Initializing ...')
+var spawn = require('child_process').spawn;
+var argv = require('optimist').argv;
 
 // Evilprobe's libs
+global.knownPorts = require('./libs/portlist');
 var jsUtils = require('./libs/jsUtils');
+var db = require('./libs/db');
 var app = require('./libs/app');
 var portscan = require('./libs/portscan');
 
