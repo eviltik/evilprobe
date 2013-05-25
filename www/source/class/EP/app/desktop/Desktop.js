@@ -37,7 +37,7 @@ qx.Class.define("EP.app.desktop.Desktop", {
 			padding:0,
 			backgroundColor:'#B0B0B0'
 		});
-		main.add(this.__tabViewer,3);
+		main.add(this.__tabViewer,5);
 		main.add(this.__jobsList,1);
 
 		// Create status bar

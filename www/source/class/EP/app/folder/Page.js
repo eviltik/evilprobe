@@ -21,15 +21,17 @@
         //this.addListener('jobMessage',this.__onJobMessage,this);
 
         var menu = this.__menu = new EP.app.folder.Menu();
-        var container = new qx.ui.container.Composite();
-        container.setLayout(new qx.ui.layout.HBox());
+        //ar container = new qx.ui.splitpane.Pane("horizontal");
+        //container.setLayout(new qx.ui.layout.HBox());
 
         var tree = this.__tree = new EP.app.folder.Tree(workspaceData);
 
-        container.add(tree);
+        //container.add(tree);
+        //container.add(new qx.ui.core.Widget());
 
         this.add(menu);
-        this.add(container,{flex:5});
+        this.add(tree,{flex:1});
+        //this.add(container,{flex:6});
 
         this.__button = this.getChildControl('button');
         this.__button.addListener('contextmenu',this.__onContextMenu,this);
