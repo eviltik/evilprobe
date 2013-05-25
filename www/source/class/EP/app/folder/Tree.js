@@ -21,34 +21,28 @@ qx.Class.define("EP.app.folder.Tree", {
             name:'root',
             type:'root',
             _id:'null',
+            resume:'',
             childs: [],
             opened:true
         };
 
-        this.__root = qx.data.marshal.Json.createModel(nodes, true);
+        this.__root = qx.data.marshal.Json.createModel(this.extendDataItem(nodes), true);
 
         this.base(arguments,this.__root,'name','childs');
 
     	this.set({
             showTopLevelOpenCloseIcons:true,
-    		width:300,
+    		width:500,
             itemHeight:22,
             droppable:true,
             draggable:true,
-            hideRoot:true
+            hideRoot:true,
+            allowGrowX:true
     	});
 
         this.__tm = this.getModel();
 
-
-        var delegateTree = {
-            bindItem : function(controller, node, id) {
-                controller.bindDefaultProperties(node, id);
-                node.getModel().setUserData("qxnode", node);
-            }
-        }
-
-        this.setDelegate(delegateTree);
+        this.setDelegate(this);
         this.openNode(this.__root);
 
         this.setIconPath("type");
@@ -103,13 +97,35 @@ qx.Class.define("EP.app.folder.Tree", {
         __loaded:false,
         __nodeMap:{},
 
+        /* override */
+        bindItem : function(controller, node, id) {
+            controller.bindDefaultProperties(node, id);
+            controller.bindProperty("resume", "resume", null, node, id);
+            //controller.bindProperty("type", "type", null, node, id);
+            node.getModel().setUserData("qxnode", node);
+        },
+
+        createItem : function() {
+            return new EP.app.folder.TreeItem();
+        },
+
+        extendDataItem:function(r) {
+            r.resume = '';
+            if (r.type == 'port') {
+                r.resume = r.data.banner;
+                if (!r.data.protocol) r.data.protocol='tcp';
+                r.name = r.name+'/'+r.data.protocol+' '+r.data.portName.toLowerCase();
+            }
+            if (r.type == 'host' || r.type == 'network') {
+                if (!r.childs) r.childs = [];
+            }
+            return r;
+        },
+
         __onJobMessage:function(ev) {
             var node = JSON.parse(JSON.stringify(ev.getData().message.node));
             var parentId = node.parent;
-            delete node.parent;
-            if (node.type == 'host' || node.type == 'network') {
-                node.childs = [];
-            }
+            node = this.extendDataItem(node);
             var node = qx.data.marshal.Json.createModel(node,false);
             this.__addNode(node,parentId);
         },
@@ -196,11 +212,24 @@ qx.Class.define("EP.app.folder.Tree", {
             new EP.app.util.Xhr(this.__getUrl('load'),null,this.__onNodesLoaded,this).send();
         },
 
+        __extendData:function(r) {
+            if (r.length) {
+                r.forEach(function(item) {
+                    this.extendDataItem(item);
+                    if (item.childs && item.childs.length) {
+                        this.__extendData(item.childs);
+                    }
+                },this);
+            }
+        },
+
         __onNodesLoaded:function(err,r) {
             if (!r || !r.length) {
                 // no data
                 return;
             }
+
+            this.__extendData(r);
 
             var nr = qx.data.marshal.Json.createModel(r,true);
             this.__tm.setChilds(nr);
@@ -209,16 +238,21 @@ qx.Class.define("EP.app.folder.Tree", {
             this.__loaded = true;
         },
 
+        __resetSelectionIfNeeded:function(ev) {
+
+            var isTreeItem = ev.getTarget() instanceof EP.app.folder.TreeItem;
+            var isLabel = ev.getTarget() instanceof qx.ui.basic.Label;
+            if (isTreeItem || isLabel) {
+                return false;
+            }
+            // click received from empty tree area
+            // let's reset selection
+            return this.getSelection().removeAll();
+        },
+
         __onTreeClick:function(ev) {
 
-            var c = ev.getTarget();
-            if (!c) return;
-
-            if (!(c instanceof qx.ui.tree.VirtualTreeItem)) {
-                // click received from empty tree area
-                // let's reset selection
-                return this.getSelection().removeAll();
-            }
+            if (this.__resetSelectionIfNeeded(ev)) return;
 
             var node = this.getSelection().getItem(0);
             if (!node) return;
@@ -262,11 +296,7 @@ qx.Class.define("EP.app.folder.Tree", {
 
         __onTreeContextMenu:function(ev) {
 
-            if (!(ev.getTarget() instanceof qx.ui.tree.VirtualTreeItem)) {
-                // click received from empty tree area
-                // let's reset selection
-                this.getSelection().removeAll();
-            }
+            this.__resetSelectionIfNeeded(ev);
 
             var type = '';
             var item = this.getSelection().getItem(0);
@@ -274,6 +304,10 @@ qx.Class.define("EP.app.folder.Tree", {
 
 
             var contextMenu = new qx.ui.menu.Menu();
+
+            var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
+            var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
+            var menuEmpty = new qx.ui.menu.Button('Empty','EP/empty.png');
 
             if (type == 'host' || type == 'network') {
 
@@ -291,6 +325,9 @@ qx.Class.define("EP.app.folder.Tree", {
                 contextMenu.add(menuPortScan);
                 contextMenu.add(new qx.ui.menu.Separator());
 
+            } else if (type == 'port') {
+
+                menuEdit.setEnabled(false);
 
             } else {
                 var menuNewFolder = new qx.ui.menu.Button("New folder",'EP/folder_opened.png');
@@ -307,10 +344,6 @@ qx.Class.define("EP.app.folder.Tree", {
                 contextMenu.add(new qx.ui.menu.Separator());
 
             }
-
-            var menuEdit = new qx.ui.menu.Button('Edit','EP/rename.png');
-            var menuDelete = new qx.ui.menu.Button('Delete','EP/delete.gif');
-            var menuEmpty = new qx.ui.menu.Button('Empty','EP/empty.png');
 
             menuEdit.addListener('execute',this.__nodeEdit,this);
             menuDelete.addListener('execute',this.__onMenuDelete,this);
@@ -368,18 +401,18 @@ qx.Class.define("EP.app.folder.Tree", {
 
             if (type == 'host') {
                 defaultValue = 'New host';
-            }
-            if (type == 'network') {
+            } else if (type == 'network') {
                 defaultValue = 'New network';
             }
 
-            var n = qx.data.marshal.Json.createModel({
+            var n = qx.data.marshal.Json.createModel(this.extendDataItem({
                 _id:null,
                 name: defaultValue,
                 childs: [],
                 type:type||'default',
-                opened:true
-            });
+                opened:true,
+                resume:''
+            }));
 
             var nodeId = parentItem.getChilds().push(n);
             var node = parentItem.getChilds().getItem(nodeId-1);
@@ -479,15 +512,21 @@ qx.Class.define("EP.app.folder.Tree", {
             });
 
             var onInputEvent = function(ev) {
-
                 var blured = ev.getType() == 'blur';
+                var saving = item.getUserData('saving') == true;
+                if (saving) return;
+
                 if (blured || ev.getKeyIdentifier() == 'Enter') {
                     if (!blured && (item.getName() == input.getValue())) {
                         popup.hide();
                         return;
                     }
+
                     item.setUserData('previousName',item.getName());
+                    item.setUserData('saving',true);
+
                     item.setName(input.getValue());
+
                     if (item.get('_id') !== null) {
                         this.fireDataEvent('nodeUpdated',item);
                     } else {
@@ -549,13 +588,15 @@ qx.Class.define("EP.app.folder.Tree", {
             if (parentId && parentId != "null") {
                 d.parent = parentId;
             }
-            new EP.app.util.Xhr(this.__getUrl('create'),d,this.__onNodeCreated,node).send();
+            new EP.app.util.Xhr(this.__getUrl('create'),d,this.__onNodeCreated,{self:this,node:node}).send();
         },
 
         __onNodeCreated:function(err,r) {
             if (!r.ok && r.error) return dialog.Dialog.error(r.error);
             // scope is created node
-            this.set_id(r.node._id);
+            this.node.setUserData('saving',false);
+            this.node.set_id(r.node._id);
+            this.self.__nodeMap[r.node._id] = this.node;
         },
 
         __nodeDeleted:function(ev) {
