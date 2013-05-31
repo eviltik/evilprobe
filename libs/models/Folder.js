@@ -1,7 +1,7 @@
 var log = require('../logger.js').log;
 var mongoose =  require('mongoose');
 var tree = require('mongoose-tree');
-mongoose.set('debug', true);
+mongoose.set('debug', false);
 
 
 /* schema */
@@ -26,7 +26,7 @@ var schema = mongoose.Schema({
 })
 
 schema.plugin(tree);
-schema.index({name:1,data:1});
+schema.index({name:1,data:1,creator:1,workspace:1,path:1});
 
 
 /* model */
