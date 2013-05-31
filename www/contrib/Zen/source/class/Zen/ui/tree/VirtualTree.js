@@ -84,6 +84,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         __previousNodeClicked:null,
         __loaded:false,
         __nodeMap:{},
+        __openOrCloseNodeRecursive:false,
 
         iconConverter:function(value,model) {
             // example
@@ -245,6 +246,33 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
 
             if (k == 'Delete') {
                 return this.__nodeDeleteConfirm();
+            }
+
+            if (k == '*') {
+                this.__openOrCloseNodeRecursive = true;
+                this.__openCloseNodeRecursive(this.getSelection().getItem(0));
+                this.__openOrCloseNodeRecursive = false;
+            }
+        },
+
+        __openCloseNodeRecursive:function(node) {
+            if (node.getUserData('qxnode').getOpen()) {
+                this.__toggleOpenCloseRecursive(node,false);
+            } else {
+                this.__toggleOpenCloseRecursive(node,true);
+            }
+        },
+
+        __toggleOpenCloseRecursive:function(node,open) {
+            if (open) {
+                this.openNode(node);
+            } else {
+                this.closeNode(node);
+            }
+            var childs = node.getChilds().toArray();
+            if (!childs.length) return;
+            for (var i = 0; i<childs.length; i++) {
+                this.__toggleOpenCloseRecursive(childs[i],open);
             }
         },
 
@@ -583,6 +611,8 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
 
         __nodeToggleOpenClose:function(item,status) {
             if (!this.__loaded) return;
+            if (this.__openOrCloseNodeRecursive) return;
+
             var _id = item.get_id();
             if (!_id) return;
 
