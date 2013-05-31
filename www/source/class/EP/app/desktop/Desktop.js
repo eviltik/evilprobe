@@ -45,7 +45,7 @@ qx.Class.define("EP.app.desktop.Desktop", {
 
 		// Add widgets
 		this.add(this.__menu,{left:0,top:0,right:0});
-		this.add(main,{left:0,top:30,right:0,bottom:20});
+		this.add(main,{left:0,top:30,right:0,bottom:35});
 		this.add(this.__statusBar,{left:0,bottom:0,right:0});
 
 		var indicator = new qx.ui.core.Widget();
