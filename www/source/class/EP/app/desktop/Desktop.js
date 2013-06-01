@@ -43,25 +43,26 @@ qx.Class.define("EP.app.desktop.Desktop", {
 		// Create status bar
 		this.__statusBar = new EP.app.desktop.StatusBar();
 
-		// Add widgets
+		// Add all
 		this.add(this.__menu,{left:0,top:0,right:0});
 		this.add(main,{left:0,top:30,right:0,bottom:35});
 		this.add(this.__statusBar,{left:0,bottom:0,right:0});
 
-		var indicator = new qx.ui.core.Widget();
-        indicator.setDecorator(new qx.ui.decoration.Decorator().set({
+        /* drag & drop indicator, used by tree when dragging nodes */
+		var ddi = new qx.ui.core.Widget().set({
+            height:0,
+            opacity:0.5,
+            zIndex:100,
+            droppable:true
+        })
+        ddi.setLayoutProperties({left: -1000, top: -1000});
+        ddi.setDecorator(new qx.ui.decoration.Decorator().set({
             widthTop: 1,
             styleTop: "solid",
             colorTop: "black"
         }));
-        indicator.setHeight(0);
-        indicator.setOpacity(0.5);
-        indicator.setZIndex(100);
-        indicator.setLayoutProperties({left: -1000, top: -1000});
-        indicator.setDroppable(true);
-        this.add(indicator);
-        this.__indicator = indicator;
-
+        this.add(ddi);
+        this.__indicator = ddi;
 
     },
 
