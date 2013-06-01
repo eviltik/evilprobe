@@ -10,7 +10,7 @@ var init = function() {
     app.use(express.bodyParser());
 
     app.get('*',function(req,res,next) {
-        if(req.url.match(/\.(png|gif|jpg)/)) {
+        if(req.url.match(/\.(png|gif|jpg|mp3|css)/)) {
             res.setHeader("Cache-Control", "public, max-age=345600"); // 4 days
             res.setHeader("Expires", new Date(Date.now() + 345600000).toUTCString());
         }
