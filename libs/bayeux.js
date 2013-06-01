@@ -24,9 +24,11 @@ bayeux.bind('handshake', function(clientId) {
     log.debug('faye: handshake',clientId);
 });
 
+/*
 bayeux.bind('publish',function(clientId,channel,data) {
 	log.debug('faye: publish',clientId,channel);
 })
+*/
 
 module.exports = bayeux;
 module.exports.Client = faye.Client;
