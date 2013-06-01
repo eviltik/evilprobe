@@ -10,10 +10,45 @@ qx.Class.define("EP.app.folder.Tree", {
         this.__workspaceData = workspaceData;
         this.base(arguments);
         this.addListener('jobMessage',this.onJobMessage,this);
+
+        if (qx.core.Environment.get("html.audio.mp3")) {
+            var u = qx.util.ResourceManager.getInstance().toUri("EP/sound/6370.mp3");
+            this.__sounds = [];
+            this.__soundPointer = 0;
+            for (var i = 0; i<10 ; i++) {
+                // preload
+                qx.lang.Function.delay(function() {
+                    this.__sounds.push(new qx.bom.media.Audio(u));
+                },i*100,this);
+            }
+        }
+
     },
 
     members:{
         __workspaceData:null,
+        __beepUri: null,
+
+        playSound:function() {
+            var beep = this.__sounds[this.__soundPointer];
+            var v = qx.core.Init.getApplication().__soundVolume;
+            beep.setVolume(v);
+            beep.play();
+            this.__soundPointer++;
+            if (this.__soundPointer == 10) {
+                this.__soundPointer = 0;
+            }
+        },
+
+        onJobMessage:function(ev) {
+            this.playSound();
+
+            var node = JSON.parse(JSON.stringify(ev.getData().message.node));
+            var parentId = node.parent;
+            node = this.extendDataItem(node);
+            var node = qx.data.marshal.Json.createModel(node,false);
+            this.__addNode(node,parentId);
+        },
 
         /* override */
         iconConverter:function(value,model) {
@@ -47,14 +82,6 @@ qx.Class.define("EP.app.folder.Tree", {
 
         getUrl:function(action) {
             return 'folder/'+this.__workspaceData._id+'/'+action;
-        },
-
-        onJobMessage:function(ev) {
-            var node = JSON.parse(JSON.stringify(ev.getData().message.node));
-            var parentId = node.parent;
-            node = this.extendDataItem(node);
-            var node = qx.data.marshal.Json.createModel(node,false);
-            this.__addNode(node,parentId);
         },
 
         onTreeContextMenu:function(ev) {
