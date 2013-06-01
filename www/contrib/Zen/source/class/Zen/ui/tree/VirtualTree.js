@@ -269,6 +269,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             } else {
                 this.closeNode(node);
             }
+            if (!node.getChilds) return;
             var childs = node.getChilds().toArray();
             if (!childs.length) return;
             for (var i = 0; i<childs.length; i++) {
