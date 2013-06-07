@@ -121,14 +121,17 @@ qx.Class.define("EP.app.folder.Tree", {
                 var menuNewFolder = new qx.ui.menu.Button("New folder",'EP/folder_opened.png');
                 var menuNewNetwork = new qx.ui.menu.Button("New network",'EP/network.png');
                 var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.gif');
+                var menuRandomHost = new qx.ui.menu.Button("Random hosts",'EP/host.gif');
 
                 menuNewFolder.addListener('execute',this.__onMenuNewFolder,this);
                 menuNewNetwork.addListener('execute',this.__onMenuNewNetwork,this);
                 menuNewHost.addListener('execute',this.__onMenuNewHost,this);
+                menuRandomHost.addListener('execute',this.__onMenuRandomHost,this);
 
                 contextMenu.add(menuNewFolder);
                 contextMenu.add(menuNewNetwork);
                 contextMenu.add(menuNewHost);
+                contextMenu.add(menuRandomHost);
                 contextMenu.add(new qx.ui.menu.Separator());
 
             }
@@ -158,6 +161,20 @@ qx.Class.define("EP.app.folder.Tree", {
             });
 
             return true;
+        },
+
+        __onMenuNewNetwork:function() {
+            this.__nodeCreate('network');
+        },
+
+        __onMenuNewHost:function() {
+            this.__nodeCreate('host');
+        },
+
+        __onMenuRandomHost:function() {
+            //CIDR.long2ip(Math.random()*4294967296);
+            var w = new EP.app.popup.randomHost();
+            w.show();
         },
 
         nodeCreateDefaultValue:function(type) {
