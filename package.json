@@ -17,6 +17,19 @@
     "scanner",
     "qooxdoo"
   ],
+  "dependencies": {
+    "async": "latest",
+    "geoip": "latest",
+    "optimist": "latest",
+    "qjobs": "latest",
+    "winston": "latest",
+    "bcrypt": "latest",
+    "express": "latest",
+    "faye": "latest",
+    "mongoose":"latest",
+    "xml2json":"latest",
+    "pinger":"latest"
+ },  
   "author": "Eviltick",
   "license": "GPLv3",
   "readmeFilename": "Readme.md"
