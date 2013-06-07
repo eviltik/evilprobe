@@ -20,14 +20,14 @@ qx.Class.define("EP.app.folder.TreeItem", {
 
       // The label
       this.addLabel()
-      this.getChildControl("label").setWidth(200);
+      //this.getChildControl("label").setWidth(200);
 
       // All else should be right justified
-      this.addWidget(new qx.ui.core.Spacer(20));
+      //this.addWidget(new qx.ui.core.Spacer(20));
 
-      var text = this.__size = new qx.ui.basic.Label();
-      this.bind("resume", text, "value");
-      this.addWidget(text);
+      //var text = this.__size = new qx.ui.basic.Label();
+      //this.bind("resume", text, "value");
+      //this.addWidget(text);
 
     }
   }
