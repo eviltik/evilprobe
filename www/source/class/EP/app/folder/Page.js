@@ -11,27 +11,23 @@
         this.base(arguments,workspaceData.name||'Empty title');
 
         this.set({
-                layout:new qx.ui.layout.VBox(5),
-                showCloseButton:true,
-                margin:0,
-                padding:0
-            });
-
-        //this.__faye = qx.core.Init.getApplication().getFayeManager();
-        //this.addListener('jobMessage',this.__onJobMessage,this);
+            layout:new qx.ui.layout.VBox(5),
+            showCloseButton:true,
+            margin:0,
+            padding:0
+        });
 
         var menu = this.__menu = new EP.app.folder.Menu();
-        //ar container = new qx.ui.splitpane.Pane("horizontal");
-        //container.setLayout(new qx.ui.layout.HBox());
 
         var tree = this.__tree = new EP.app.folder.Tree(workspaceData);
+        var table = this.__table = new EP.app.folder.Table(workspaceData,tree);
 
-        //container.add(tree);
-        //container.add(new qx.ui.core.Widget());
+        var container = new qx.ui.splitpane.Pane("horizontal");
+        container.add(tree);
+        container.add(table,3);
 
         this.add(menu);
-        this.add(tree,{flex:1});
-        //this.add(container,{flex:6});
+        this.add(container,{flex:6});
 
         this.__button = this.getChildControl('button');
         this.__button.addListener('contextmenu',this.__onContextMenu,this);
