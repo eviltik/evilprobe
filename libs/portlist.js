@@ -2,13 +2,11 @@ var log = require('../libs/logger').log;
 var fs = require('fs');
 var xml2json = require('xml2json');
 
-log.info('IANA Ports list: reading file ...');
+var file = 'data/service-names-port-numbers.xml';
+
+log.info('IANA Ports list: reading file '+file+', please wait');
 
 var content = fs.readFileSync('data/service-names-port-numbers.xml');
-
-log.info('IANA Ports list: completed ('+content.length+' bytes)');
-
-log.info('IANA Ports list: parsing data ...');
 
 ianaPorts = xml2json.toJson(content,{object:true,reversible:false});
 
@@ -43,7 +41,7 @@ for (var i = 0; i < ianaPorts.registry.record.length;i++) {
         ports[r.number] = {
           name:r.name || r.description
         }
-        if (protocols.indexOf(r.protocol)==-1) {
+        if (r.protocol && protocols.indexOf(r.protocol)==-1) {
           //log.debug('IANA Ports list: adding protocol '+r.number);
           protocols.push(r.protocol);
         }
@@ -51,7 +49,7 @@ for (var i = 0; i < ianaPorts.registry.record.length;i++) {
     }
 }
 
-log.info('IANA Ports list: founded '+i+' ports ('+protocols.join(',')+')');
+log.info('IANA Ports list: done, '+i+' ports found ('+protocols.join(',')+')');
 
 
 module.exports = ports;
