@@ -8,6 +8,7 @@ var app = express();
 var init = function() {
     /* start classical express webserver */
     app.use(express.bodyParser());
+    //app.use(express.logger());
 
     app.get('*',function(req,res,next) {
         if(req.url.match(/\.(png|gif|jpg|mp3|css)/)) {
@@ -42,10 +43,13 @@ var init = function() {
     var User = db.model('User');
     var Workspace = db.model('Workspace');
     var Folder = db.model('Folder');
+    var ipInfo = require('./ipInfo');
 
+    // Authentication and session related webservices
     app.post('/ws/auth/check',User.ws.check);
     app.post('/ws/auth/login',User.ws.login);
 
+    // Workspaces management related webservices
     app.post('/ws/workspace/search',Workspace.ws.search);
     app.post('/ws/workspace/mines/exist',Workspace.ws.mines.exist);
     app.post('/ws/workspace/mines/create',Workspace.ws.mines.create);
@@ -54,6 +58,7 @@ var init = function() {
     app.post('/ws/workspace/mines/close',Workspace.ws.mines.close);
     app.post('/ws/workspace/mines/select',Workspace.ws.mines.select);
     app.post('/ws/workspace/mines/delete',function(req,res,next) {
+        // TODO: refactor that shit
         log.debug('Workspace.ws.mines.delete '+JSON.stringify(req.body));
 
         if (!req.body._id) {
@@ -67,6 +72,7 @@ var init = function() {
         });
     });
 
+    // Folders(tree) management related webservices
     app.all('/ws/folder/:workspaceId/load',Folder.ws.load);
     app.all('/ws/folder/:workspaceId/create',Folder.ws.create);
     app.all('/ws/folder/:workspaceId/update',Folder.ws.update);
@@ -74,6 +80,11 @@ var init = function() {
     app.all('/ws/folder/:workspaceId/deleteAll',Folder.ws.deleteAll);
     app.all('/ws/folder/:workspaceId/empty',Folder.ws.empty);
     app.all('/ws/folder/:workspaceId/openClose',Folder.ws.openClose);
+
+    // ip info related webservices
+    app.all('/ws/ipInfo/:ip',ipInfo.ws.info);   // single ip
+
+    // start the webserver
     app.listen(global.port||80);
 }
 
