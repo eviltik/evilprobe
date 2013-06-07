@@ -1,12 +1,10 @@
 evilprobe
 =========
 
-Network Security Tool
+A Network Security Tool, work in progress.
 
-Currently under development. 
-
-Please come back later ;)
+I'm evil. Something huge is coming. Stay tuned. Really.
 
 
 ===========
-![Alt text](http://img4.hostingpics.net/pics/873322evilprobe1.png "Optional title")
+
