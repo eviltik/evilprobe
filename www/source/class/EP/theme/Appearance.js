@@ -42,6 +42,6 @@ qx.Theme.define("EP.theme.Appearance", {
             		"EP/folder_closed.png"
         		};
       		}
-    	}    	
+    	}
   	}
 });
