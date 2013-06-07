@@ -4,16 +4,16 @@
    Authors: eviltik
 ************************************************************************ */
 
-/* ***
- #asset(EP/*)
- #asset(qx/icon/Tango/22/apps/utilities-color-chooser.png)
- #asset(qx/icon/Tango/16/apps/utilities-terminal.png)
- #asset(qx/icon/Tango/16/actions/list-add.png)
- #asset(qx/icon/Tango/32/actions/help-faq.png)
+/**
+ * @asset(EP/*)
+ * @asset(qx/icon/Tango/22/apps/utilities-color-chooser.png)
+ * @asset(qx/icon/Tango/16/apps/utilities-terminal.png)
+ * @asset(qx/icon/Tango/16/actions/list-add.png)
+ * @asset(qx/icon/Tango/32/actions/help-faq.png)
  */
 
 /**
- * @lint ignoreUndefined(CIDR,objectForEach,Faye)
+ * @lint ignore(CIDR,objectForEach,Faye)
  */
 
 window.objectForEach = function(obj,cb,caller) {
