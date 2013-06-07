@@ -5,6 +5,7 @@ qx.Class.define("EP.app.util.Xhr", {
     construct: function(url,data,cb,caller) {
 
         this.__cb = cb;
+        //console.log(cb);
         this.__caller = caller;
 
         url = '/ws/'+url;
@@ -24,6 +25,8 @@ qx.Class.define("EP.app.util.Xhr", {
         __statusBar:null,
 
         __onFail : function(e) {
+
+            //console.log('__onFail',e);
             /*
             e=e.getTarget();
             if (e.getStatus()!=200) {
@@ -40,23 +43,26 @@ qx.Class.define("EP.app.util.Xhr", {
 
         __onSuccess : function(e) {
 
+            //console.log('__onSuccess',e);
+
             e=e.getTarget();
             if (!e.getResponse()) {
                 dialog.Dialog.error("Error: the server sent an empty response (200)");
             } else {
                 var o=e.getResponse();
                 if (o && o.clienterror&&o.clienterror.stack) {
-                    dialog.Dialog.error("Erreur interne:<br/><br/>"+o.clienterror.stack);
+                    dialog.Dialog.error("Internal error:<br/><br/>"+o.clienterror.stack);
                     return;
                 }
                 if (o && o.sqlerror) {
-                    dialog.Dialog.error("Erreur interne:<br/><br/>"+o.sqlerror);
+                    dialog.Dialog.error("Internal error:<br/><br/>"+o.sqlerror);
                     return;
                 }
                 if (typeof o == 'string') {
-                    dialog.Dialog.error("Erreur interne:<br/><br/>"+o);
+                    dialog.Dialog.error("Internal error:<br/><br/>"+o);
                     return;
                 }
+
                 if (!this.__cb) return;
                 qx.lang.Function.bind(this.__cb,this.__caller)(null,o);
             }
