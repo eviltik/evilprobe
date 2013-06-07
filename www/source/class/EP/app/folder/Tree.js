@@ -59,7 +59,6 @@ qx.Class.define("EP.app.folder.Tree", {
 
         bindItem : function(controller, node, id) {
             controller.bindDefaultProperties(node, id);
-            controller.bindProperty("resume", "resume", null, node, id);
             node.getModel().setUserData("qxnode", node);
         },
 
