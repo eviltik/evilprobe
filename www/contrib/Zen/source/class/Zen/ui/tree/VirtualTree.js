@@ -486,6 +486,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             });
 
             var onInputEvent = function(ev) {
+
                 var blured = ev.getType() == 'blur';
                 var saving = item.getUserData('saving') == true;
                 if (saving) return;
