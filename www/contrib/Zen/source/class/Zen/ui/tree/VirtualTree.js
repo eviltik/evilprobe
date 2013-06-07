@@ -6,7 +6,8 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         nodeCreated: "qx.event.type.Data",
         nodeUpdated: "qx.event.type.Data",
         nodeDeleted: "qx.event.type.Data",
-        nodeEmptied: "qx.event.type.Data"
+        nodeEmptied: "qx.event.type.Data",
+        nodeSelected: "qx.event.type.Data"
     },
 
     construct:function() {
@@ -156,6 +157,11 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
 
         __onSelectionChange:function(ev) {
             this.__selected = this.getSelection().getItem(0);
+            this.fireDataEvent('nodeSelected',this.__selected);
+        },
+
+        getSelected:function() {
+            return this.__selected;
         },
 
         getUrl:function(more) {
@@ -353,14 +359,6 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             this.__nodeCreate();
         },
 
-        __onMenuNewNetwork:function() {
-            this.__nodeCreate('network');
-        },
-
-        __onMenuNewHost:function() {
-            this.__nodeCreate('host');
-        },
-
         __onMenuDelete:function() {
             this.__nodeDeleteConfirm();
         },
@@ -492,6 +490,18 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                 var saving = item.getUserData('saving') == true;
                 if (saving) return;
 
+                // prevent keypressed followed by a blur event,
+                // causing to always save a node (we don't want that for Escape key)
+                if (blured) {
+                    if (item.getUserData('keypressed') === true) {
+                        return;
+                    }
+                } else if (ev.getKeyIdentifier) {
+                    if (ev.getKeyIdentifier()=='Enter' || ev.getKeyIdentifier() == 'Escape') {
+                        item.setUserData('keypressed',true);
+                    }
+                }
+
                 if (blured || ev.getKeyIdentifier() == 'Enter') {
                     if (!blured && (item.getName() == input.getValue())) {
                         popup.hide();
@@ -508,13 +518,14 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                     } else {
                         this.fireDataEvent('nodeCreated',item);
                     }
+                    item.setUserData('keypressed',false);
                     return popup.hide();
                 }
 
                 if (ev.getKeyIdentifier() == 'Escape') {
-                    var parent = item.getUserData('parent');
                     if (item.get_id() === null) {
                         // was a fresh created node
+                        var parent = item.getUserData('parent');
                         parent.getChilds().remove(item);
                         this.refresh();
                         this.getSelection().setItem(0,parent);
