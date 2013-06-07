@@ -491,8 +491,11 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                 var saving = item.getUserData('saving') == true;
                 if (saving) return;
 
-                // prevent keypressed followed by a blur event,
-                // causing to always save a node (we don't want that for Escape key)
+                // when answer of the save request is too quick,
+                // let's prevent keypressed followed by a blur event,
+                // causing to always save a node (we don't want that
+                // for Escape key)
+
                 if (blured) {
                     if (item.getUserData('keypressed') === true) {
                         return;
@@ -503,6 +506,8 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                     }
                 }
 
+                // Enter key or click anywhere else
+                // Let's save
                 if (blured || ev.getKeyIdentifier() == 'Enter') {
                     if (!blured && (item.getName() == input.getValue())) {
                         popup.hide();
@@ -523,6 +528,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                     return popup.hide();
                 }
 
+                // Escape key, don't save
                 if (ev.getKeyIdentifier() == 'Escape') {
                     if (item.get_id() === null) {
                         // was a fresh created node
