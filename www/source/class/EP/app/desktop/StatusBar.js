@@ -32,21 +32,25 @@ qx.Class.define("EP.app.desktop.StatusBar", {
             if (this.__networkIconTimer) {
                 clearTimeout(this.__networkIconTimer)
             } else {
-                this.__networkIcon.setIcon(this.__networkIconOn);
+                this.__networkIcon.setSource(this.__networkIconOn);
             }
             this.__networkIconTimer = qx.lang.Function.delay(function() {
-                this.__networkIcon.setIcon(this.__networkIconOff);
+                this.__networkIcon.setSource(this.__networkIconOff);
                 this.__networkIconTimer = null;
             },400,this);
         },
 
         getEarthIcon:function() {
             /* earth map */
-            this.__earthIcon = new qx.ui.form.MenuButton(null,"EP/ico_earth.png",null).set({
-                padding:0,
+            this.__earthIcon = new qx.ui.basic.Image("EP/ico_earth_anim.gif").set({
+                marginRight:10,
                 decorator : null,
                 alignY : 'middle',
-                focusable:false
+                focusable:false,
+                height:16,
+                width:16,
+                scale:true,
+                cursor:'pointer'
             });
             return this.__earthIcon;
         },
@@ -67,17 +71,16 @@ qx.Class.define("EP.app.desktop.StatusBar", {
                 var v = sliderSound.getValue();
                 soundIcon.setUserData('value',100-v);
                 if (v == 100) {
-                    this.__soundIcon.setIcon('EP/ico_sound_off.png');
+                    this.__soundIcon.setSource('EP/ico_sound_off.png');
                     return qx.core.Init.getApplication().__soundVolume = 0;
                 } else {
-                    this.__soundIcon.setIcon('EP/ico_sound_on.png');
+                    this.__soundIcon.setSource('EP/ico_sound_on.png');
                 }
                 qx.core.Init.getApplication().__soundVolume = (100 - v)/100;
             },this);
 
             var sliderContainer = new qx.ui.popup.Popup();
             sliderContainer.set({
-                marginLeft:5,
                 padding:2,
                 layout:new qx.ui.layout.Canvas(),
                 height:100,
@@ -85,15 +88,17 @@ qx.Class.define("EP.app.desktop.StatusBar", {
             })
             sliderContainer.add(sliderSound,{top:0,left:0,right:0,bottom:0});
 
-            var soundIcon = this.__soundIcon = new qx.ui.form.MenuButton(null,"EP/ico_sound_on.png",null).set({
+            var soundIcon = this.__soundIcon = new qx.ui.basic.Image("EP/ico_sound_on.png").set({
+                marginRight:10,
                 decorator : null,
                 alignY : 'middle',
-                focusable:false
+                focusable:false,
+                cursor:'pointer'
             });
 
             soundIcon.addListener('click',function(ev) {
                 sliderSound.setValue(100-this.getUserData('value'));
-                sliderContainer.setPosition('bottom-left');
+                sliderContainer.setPosition('bottom-center');
                 sliderContainer.placeToWidget(soundIcon);
                 sliderContainer.show();
             })
@@ -106,12 +111,12 @@ qx.Class.define("EP.app.desktop.StatusBar", {
 
         getNetworkIcon:function() {
             // network indicator
-            this.__networkIcon = new qx.ui.form.MenuButton(null,"EP/net_off.gif",null).set({
-                padding : 0,
+            this.__networkIcon = new qx.ui.basic.Image("EP/net_off.gif").set({
+                marginRight:10,
                 decorator : null,
                 alignY : 'middle',
-                paddingRight : 6,
-                focusable:false
+                focusable:false,
+                cursor:'pointer'
             });
             qx.event.message.Bus.subscribe('networkActivity',this.networkIconFlash,this);
             return this.__networkIcon;
