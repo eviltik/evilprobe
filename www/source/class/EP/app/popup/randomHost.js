@@ -4,6 +4,7 @@ qx.Class.define("EP.app.popup.randomHost", {
 
     events: {
         jobMessage: "qx.event.type.Data",
+        jobStart: "qx.event.type.Data",
         jobEnd: "qx.event.type.Data",
         jobAbort: "qx.event.type.Data"
     },
@@ -28,6 +29,7 @@ qx.Class.define("EP.app.popup.randomHost", {
             centered:true
     	})
         this.addListener('jobMessage',this.onJobMessage,this);
+        this.addListener('jobStart',this.onJobStart,this);
         this.addListener('jobEnd',this.onJobEnd,this);
         this.addListener('jobAbort',this.onJobAbort,this);
 
@@ -40,9 +42,27 @@ qx.Class.define("EP.app.popup.randomHost", {
         __table :null,
 
         onJobMessage:function(ev) {
-            var ip = ev.getData().message.ip;
-            var data = [ip,'','','',''];
-            this.__tableModel.addRows([data]);
+            if (ev.getData().data.job._jobCmd == 'ipv4Info') {
+                var res = ev.getData().message;
+                var rid = parseInt(res.row);
+                this.__tableModel.setValue(2,rid,res.reverse);
+                this.__tableModel.setValue(1,rid,res.up);
+                this.__tableModel.setValue(3,rid,res.country);
+                this.__tableModel.setValue(4,rid,res.city);
+                this.__table.scrollCellVisible(0,res.row);
+            } else {
+                var ip = ev.getData().message.ip;
+                var data = [ip,'','','',''];
+                this.__tableModel.addRows([data]);
+            }
+        },
+
+        onJobStart:function(ev) {
+            var jobInfo = ev.getData().job;
+            if (jobInfo._jobCmd == 'ipv4Info') {
+                this.__table.setEnabled(false);
+            }
+            this.__left.setEnabled(false);
         },
 
         onJobEnd:function(ev) {
@@ -50,6 +70,8 @@ qx.Class.define("EP.app.popup.randomHost", {
             if (jobInfo._jobCmd == 'ipv4Random') {
                 this.__buttonInfo.show();
             }
+            this.__table.setEnabled(true);
+            this.__left.setEnabled(true);
         },
 
         onJobAbort:function(ev) {
@@ -79,15 +101,14 @@ qx.Class.define("EP.app.popup.randomHost", {
             buttonContainer.add(this.__getButtonCancel(),{left: 0});
             buttonContainer.add(this.__getButtonOk(),{right: 0});
 
-            v.add(content);
-            //v.add(this.__getWarning());
+            v.add(content,{flex:1});
             v.add(new qx.ui.core.Spacer(10));
             v.add(buttonContainer);
             return v;
         },
 
         __getForm:function() {
-            var left = new qx.ui.container.Composite();
+            var left = this.__left = new qx.ui.container.Composite();
             left.set({
                 layout:new qx.ui.layout.VBox(2),
                 decorator:'group-css',
@@ -271,27 +292,21 @@ qx.Class.define("EP.app.popup.randomHost", {
             var ips = [];
             this.__resolvedMax = this.__table.getTableModel().getData().length;
             this.__resolved = 0;
-            this.__buttonInfo.setEnabled(false);
-            this.__buttonGenerate.setEnabled(false);
-            var ping = this.__pingCheckbox.getValue();
-            /*
-            this.__table.getTableModel().getData().forEach(function(rowData,idrow) {
-                new EP.app.util.Xhr('ipInfo/'+rowData[0],{idrow:idrow,ping:ping},this.__onIpInfo,this).send();
-            },this);
-            */
+            this.__left.setEnabled(false);
 
             var job = {};
-            job._jobCmd = 'ipv4info';
+            job._jobCmd = 'ipv4Info';
             job._jobTitle = 'Gathering IPv4 infos';
             job._jobUid = Date.now();
 
             // Command arguments
             job.args = {};
             var ips = [];
-            this.__tableModel.getData().forEach(function(row) {
-                ips.push(row[0]);
+            this.__tableModel.getData().forEach(function(row,i) {
+                ips.push({row:i,ip:row[0]});
             })
             job.args.ips = ips;
+            job.args.ping = this.__pingCheckbox.getValue();
             qx.core.Init.getApplication().getJobsManager().start(job,this);
 
         }

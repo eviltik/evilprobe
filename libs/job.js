@@ -2,6 +2,7 @@ var EventEmitter = require('events').EventEmitter;
 var log = require('./logger').log;
 var portscan = require('./modules/portscan');
 var ipv4Random = require('./modules/ipv4Random');
+var ipv4Info = require('./modules/ipv4Info');
 
 var objectForEach = function(obj,cb) {
     var i = -1;
@@ -69,6 +70,9 @@ var get = function(jobUid) {
 
 var update = function(jobUid,args) {
     var j = jobs[jobUid];
+    if (j._timeStart) {
+        j._timeElapsed = Date.now() - j._timestart;
+    }
     objectForEach(args,function(key,val) {
 		j[key]=val;
 	},this);
@@ -164,6 +168,7 @@ var onMessage = function(d,channel) {
         /* allowed jobs */
         'portscan':portscan,
         'ipv4Random':ipv4Random,
+        'ipv4Info':ipv4Info,
 
         /* action on jobs */
         'pause':pauseToggle,
@@ -175,7 +180,7 @@ var onMessage = function(d,channel) {
         add(d,this);
         return error(d._jobUid,'Module '+d._jobCmd+' not available');
     }
-    allowedJobs[d._jobCmd](d);
+    new allowedJobs[d._jobCmd](d);
 }
 
 var init = function() {

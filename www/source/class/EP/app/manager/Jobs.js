@@ -43,6 +43,7 @@ qx.Class.define("EP.app.manager.Jobs", {
                 this.__jobs[job._jobUid] = this.__FM.jobSubscribe(job,callbackBinded);
                 this.__jobs[job._jobUid].info = job;
                 this.__jobs[job._jobUid].widget = widget;
+                this.__jobs[job._jobUid].widget.fireDataEvent('jobStart',{job:job});
             }
             this.__FM.jobPublish(job);
         },
