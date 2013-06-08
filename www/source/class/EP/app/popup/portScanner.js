@@ -18,7 +18,7 @@
             showMinimize:false,
             showMaximize:false,
             margin:0,
-            width:300,
+            width:400,
             caption:'Ports Scanner',
             layout:new qx.ui.layout.VBox(),
             modal:true,
@@ -97,7 +97,8 @@
                 filter:/[0-9,]/,
                 invalidMessage:'Single or multiple port',
                 //value:'21,22,23,79,80,110,113,119,143,443,1002,1720,5000,5900,8080'
-                value:'21,22,23'
+                //value:'21,22,23'
+                value:'21,22,23,25,79,80,110,113,119,137,139,143,443,555,666,1001,1002,1025,1026,1028,1243,1720,2000,5000,5900,6667,6711,6776,6711,6776,6969,7000,8080,12345,12346,21554,22222,27374,29559'
             })
 
             /*
@@ -161,14 +162,14 @@
             //buttonScan.setEnabled(false);
 
             var job = {};
-            job.jobCmd = 'portscan';
-            job.jobTitle = 'Scanning '+this.inputCidr.getValue();
-            job.jobUid = Date.now();
+            job._jobCmd = 'portscan';
+            job._jobTitle = 'Scanning '+this.inputCidr.getValue();
+            job._jobUid = Date.now();
             job.metadata = this.__meta;
 
             // Command arguments
             job.args = {};
-            job.args.cidr = this.inputCidr.getValue();
+            job.args.target = this.inputCidr.getValue();
             job.args.port = this.inputPortsList.getValue();
             this.checkboxResolveCountry.getValue() ? job.args.country = true : job.args.country = false;
             this.checkboxResolveCity.getValue() ? job.args.city = true : job.args.city = false;

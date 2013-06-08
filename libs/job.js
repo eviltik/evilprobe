@@ -1,4 +1,7 @@
 var EventEmitter = require('events').EventEmitter;
+var log = require('./logger').log;
+var portscan = require('./modules/portscan');
+var ipv4Random = require('./modules/ipv4Random');
 
 var objectForEach = function(obj,cb) {
     var i = -1;
@@ -8,21 +11,53 @@ var objectForEach = function(obj,cb) {
     }
 }
 
-var jobs = {};
-var debug = false;
+var jobs = global.jobs;
 
-var add = function(jobUid,job) {
-	job._jobUid = jobUid;
+var debug = true;
+
+var toGui = function(job) {
+    var j = {};
+    j._jobTitle = job._jobTitle;
+    j._jobUid = job._jobUid;
+    j._status = job._status;
+    j._message = job._message;
+    j._progress = job._progress;
+    j._jobsRunning = job._jobsRunning;
+    j._jobsDone = job._jobsDone;
+    j._jobsTotal = job._jobsTotal;
+    j._timeStart = job._timestart;
+    j._timeEnd = job._timeEnd;
+    j._timeElapsed =job._timeElapsed;
+    return j;
+}
+
+var add = function(opts,myJob) {
+    var job = JSON.parse(JSON.stringify(opts));
     job._status = 'Starting';
-	jobs[jobUid] = job;
-	log('add #'+jobUid,JSON.stringify(jobs[jobUid]));
-	module.exports.emit('jobAdded', jobs[jobUid]);
-	return job;
+	jobs[job._jobUid] = opts;
+	if (debug) log.debug('add #'+job._jobUid,JSON.stringify(job));
+    global.procs[opts._jobUid] = myJob;
+    refreshJobs();
+	module.exports.emit('jobAdded', job);
+	return opts;
+}
+
+var say = function(jobUid,what) {
+    global.bayeuxClient.publish('/jobs/'+jobUid,what);
+}
+
+var error = function(jobUid,message) {
+    var job = get(jobUid);
+    job._status = 'Error';
+    job._message = message;
+    job._timeElapsed = 0;
+    job._progress = 100;
+    log.error(job._jobCmd+' not implemented');
 }
 
 var del = function(jobUid) {
 	var job = JSON.stringify(jobs[jobUid]);
-    log('del #'+jobUid,job);
+    if (debug) log.debug('del #'+jobUid,job);
 	delete jobs[jobUid];
 	job = JSON.parse(job);
 	module.exports.emit('jobDeleleted', job);
@@ -37,7 +72,7 @@ var update = function(jobUid,args) {
     objectForEach(args,function(key,val) {
 		j[key]=val;
 	},this);
-	log('update #'+jobUid,JSON.stringify(j));
+	if (debug) log.debug('update #'+jobUid,JSON.stringify(j));
 	module.exports.emit('jobUpdated', j);
 }
 
@@ -45,48 +80,126 @@ var terminate = function(jobUid,args) {
 	var now = new Date().getTime();
     var j = jobs[jobUid];
 	j._status = 'Finished';
-	log('terminate #'+jobUid,JSON.stringify(j));
+    refreshJobs();
+	if (debug) log.debug('terminate #'+jobUid,JSON.stringify(j));
 	module.exports.emit('jobUpdated', j);
+    delete global.procs[jobUid];
+}
+
+var pauseToggle =  function(d) {
+    if (!d._jobUid) return log.error(d._jobCmd+' without jobUid '+d._jobUid);
+    log.info('< GUI: pauseToggle: '+d._jobCmd+' wanted for job '+d._jobUid);
+    if (global.procs[d._jobUid].kill) {
+        global.procs[d._jobUid].kill('SIGUSR1');
+    }
+}
+
+var abort = function(d) {
+    if (!d._jobUid) return log.error('Abort without '+d._jobUid);
+    log.info('< GUI: abort: '+d._jobCmd+' wanted for job '+d._jobUid);
+    if (global.procs[d._jobUid].kill) {
+        global.procs[d._jobUid].kill();
+    }
+    terminate(d._jobUid);
 }
 
 var setDebug = function(d) {
 	debug = d;
 }
 
-var log = function(a,b) {
-	if (debug === true) console.log(a,b);
-}
-
 var getJobs = function(clean) {
 	var j = [];
-	objectForEach(jobs,function(jobUid,job) {
-		j.push(job);
-		if (clean && job._status == 'Finished' && !job._message.match(/^Error/)) {
-			delete jobs[jobUid];
-		}
+	objectForEach(global.jobs,function(jobUid,job) {
+		j.push(toGui(job));
+		if (clean && job._status == 'Finished') delete jobs[jobUid];
 	});
 	return j;
 }
 
 /* publish jobs list if changes occured so the GUI can display it */
 var previousJobs =[];
-var refreshJobs = setInterval(function() {
+var refreshJobs = function() {
     if (!global.bayeuxClient) {
     	return console.log('> No bayeux client, ignoring');
-    	clearInterval(refreshJobs);
+    	clearInterval(refreshJobsTimer);
     }
     var jobs = getJobs(true);
     if (JSON.stringify(jobs) != previousJobs) {
-        global.bayeuxClient.publish('/jobs/status',jobs);
-        log('> GUI: ',JSON.stringify(jobs));
         previousJobs = JSON.stringify(jobs);
+        global.bayeuxClient.publish('/jobs/status',jobs);
+        log.info('> GUI: refreshJobs: '+JSON.stringify(jobs));
     }
-},1000);
+}
+var refreshJobsTimer = setInterval(refreshJobs,1000);
+
+var onMessage = function(d,channel) {
+
+    log.info('< GUI: onMessage: '+JSON.stringify(d));
+
+    if (!d) {
+        log.error('Received null message');
+        return;
+    }
+
+    if (!d.userSessionId) {
+        log.error('Received something without userSessionId !',JSON.stringify(d));
+        return;
+    }
+
+    var userId = global.sessions[d.userSessionId];
+    if (!userId) {
+        log.error('Unknow user with session ',d.userSessionId);
+        return;
+    }
+
+    d.userId = userId;
+
+    if (!d._jobCmd) {
+        log.error('Received something without cmd !',JSON.stringify(d));
+        return;
+    }
+
+    var allowedJobs = {
+
+        /* allowed jobs */
+        'portscan':portscan,
+        'ipv4Random':ipv4Random,
+
+        /* action on jobs */
+        'pause':pauseToggle,
+        'unpause':pauseToggle,
+        'abort':abort
+    }
+
+    if (!allowedJobs[d._jobCmd]) {
+        add(d,this);
+        return error(d._jobUid,'Module '+d._jobCmd+' not available');
+    }
+    allowedJobs[d._jobCmd](d);
+}
+
+var init = function() {
+    if (!global.bayeuxClient) return;
+
+    var s = bayeuxClient.subscribe('/jobs/manage/*', onMessage);
+
+    s.callback(function() {
+        log.info('Channel /jobs/manage initialized');
+    });
+
+    s.errback(function(error) {
+        log.error(error.message);
+        process.exit(0);
+    });
+
+}
 
 module.exports = new EventEmitter();
 module.exports.add = add;
 module.exports.del = del;
 module.exports.update = update;
 module.exports.terminate = terminate;
+module.exports.say = say;
 module.exports.setDebug = setDebug;
 module.exports.getJobs = getJobs;
+module.exports.init = init;

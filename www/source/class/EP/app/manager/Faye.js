@@ -28,17 +28,14 @@
     	},
         jobSubscribe:function(job,cb,caller) {
             if (!this.client) return;
-            var channel = '/jobs/'+job.jobUid;
+            var channel = '/jobs/'+job._jobUid;
             //console.log("jobSubscribe",channel);
             this.__notify();
             return this.client.subscribe(channel,qx.lang.Function.bind(cb,caller));
         },
         jobPublish : function(job) {
-            if (!this.client) return;
-            if (job) {
-                job.userSessionId = qx.core.Init.getApplication().getSession();
-            }
-            //console.log("jobPublish",this.channels.jobsManage,job);
+            if (!this.client || !job) return;
+            job.userSessionId = qx.core.Init.getApplication().getSession();
             this.__notify();
             return this.client.publish(this.channels.jobsManage,job);
         },
@@ -46,8 +43,8 @@
             if (!this.client) return;
             this.__notify();
             var args = {
-                jobUid:jobUid,
-                jobCmd:cmd,
+                _jobUid:jobUid,
+                _jobCmd:cmd,
                 userSessionId:qx.core.Init.getApplication().getSession()
             }
             return this.client.publish(this.channels.jobsManage,args);

@@ -20,7 +20,6 @@ qx.Class.define("EP.app.manager.Jobs", {
             // the function has been bind to an object :
             // {self:this, job:job}
             this.widget.fireDataEvent('jobMessage',{message:obj,data:this});
-            //console.log('onJobMessage',job.jobUid,this);
         },
 
         __remove : function(jobUid) {
@@ -38,10 +37,12 @@ qx.Class.define("EP.app.manager.Jobs", {
 
         /* public */
 
-        push : function(job,widget) {
+        start : function(job,widget) {
             if (widget) {
                 var callbackBinded = qx.lang.Function.bind(this.__onJobMessage,{widget:widget,job:job});
-                this.__jobs[job.jobUid] = this.__FM.jobSubscribe(job,callbackBinded);
+                this.__jobs[job._jobUid] = this.__FM.jobSubscribe(job,callbackBinded);
+                this.__jobs[job._jobUid].info = job;
+                this.__jobs[job._jobUid].widget = widget;
             }
             this.__FM.jobPublish(job);
         },
@@ -55,13 +56,23 @@ qx.Class.define("EP.app.manager.Jobs", {
         },
 
         abort : function(jobUid) {
+            if (!jobUid) return;
+            if (!this.__jobs[jobUid]) return;
+
+            var jobInfo = this.__jobs[jobUid].info;
+
             this.__command(jobUid,'abort');
+            this.__jobs[jobUid].widget.fireDataEvent('jobAbort',{job:jobInfo,data:this});
+
             setTimeout(function() {
                 this.__remove(jobUid);
             }.bind(this),1500);
         },
 
         end : function(jobUid) {
+            if (!this.__jobs[jobUid]) return;
+            var jobInfo = this.__jobs[jobUid].info;
+            this.__jobs[jobUid].widget.fireDataEvent('jobEnd',{job:jobInfo,data:this});
             this.__remove(jobUid);
         }
     }

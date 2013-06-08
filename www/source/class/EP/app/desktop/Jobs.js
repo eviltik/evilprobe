@@ -116,6 +116,7 @@ qx.Class.define("EP.app.desktop.Jobs", {
 
         __onJobsUpdate : function(d) {
             var jobs = [];
+
             d.forEach(function(theJob) {
                 var job = [];
                 job.push(theJob._jobUid.toString());
@@ -126,15 +127,20 @@ qx.Class.define("EP.app.desktop.Jobs", {
                 job.push(theJob._status);
                 job.push(theJob._timeStart);
 
-                if (parseInt(theJob._timeEnd)) {
+                if (parseInt(theJob._timeEnd) || theJob._status == 'Finished') {
                     job.push(theJob._timeEnd);
-                    this.getJobsManager().end(theJob.uid);
+                    this.__JM.end(theJob._jobUid);
                 } else {
                     job.push(null);
                 }
 
                 job.push(Math.round(theJob._timeElapsed/1000,2)+' sec');
                 jobs.push(job);
+
+                if (theJob._status == 'Error') {
+                    new Zen.ui.window.Alert(theJob._message);
+                    this.__JM.abort(theJob._jobUid);
+                }
             },this);
             this.__tableJobs.getTableModel().setData(jobs);
         },
