@@ -2,6 +2,7 @@
 
 var log = require('./libs/logger').log;
 log.info('Initializing ...')
+
 var spawn = require('child_process').spawn;
 var argv = require('optimist').argv;
 
@@ -10,7 +11,6 @@ global.knownPorts = require('./libs/portlist');
 var jsUtils = require('./libs/jsUtils');
 var db = require('./libs/db');
 var app = require('./libs/app');
-var portscan = require('./libs/portscan');
 
 // Webserver setup
 global.port = 81;
@@ -35,63 +35,7 @@ app.start();
 global.bayeuxClient = new bayeux.Client('http://'+host+':'+port+'/faye');
 
 // Job manager
+global.jobs = {};
 global.jobManager = require('./libs/job');
 global.jobManager.setDebug(argv.debug||false);
-
-if (global.bayeuxClient) {
-    var s = bayeuxClient.subscribe('/jobs/manage/*', function(d) {
-
-        if (!d) {
-            console.log('Error: received null message');
-            return;
-        }
-
-        if (!d.userSessionId) {
-            console.log('Error: received something without userSessionId !',JSON.stringify(d));
-            return;
-        }
-
-        var userId = global.sessions[d.userSessionId];
-        if (!userId) {
-            console.log('Error: unknow user with session ',d.userSessionId);
-            return;
-        }
-
-        d.userId = userId;
-
-        if (!d.jobCmd) {
-            console.log('Error: received something without cmd !',JSON.stringify(d));
-            return;
-        }
-
-        if (d.jobCmd == 'portscan') {
-            return portscan(d);
-        }
-
-        if (!d.jobUid||!global.procs[d.jobUid]) {
-            console.log(d.jobUid+' not in processus list');
-            process.exit();
-            return;
-        }
-
-        if (d.jobCmd == 'pause'||d.jobCmd == 'unpause') {
-            console.log('< GUI: '+d.jobCmd+' wanted for job '+d.jobUid);
-            return global.procs[d.jobUid].kill('SIGUSR1');
-        }
-
-        if (d.jobCmd == 'abort') {
-            console.log('< GUI: '+d.jobCmd+' wanted for job '+d.jobUid);
-            return global.procs[d.jobUid].kill();
-        }
-    });
-
-    s.callback(function() {
-        log.info('Channel /jobs/manage initialized');
-    });
-
-    s.errback(function(error) {
-        log.error(error.message);
-        process.exit(0);
-    });
-
-}
+global.jobManager.init();
