@@ -2,6 +2,12 @@ qx.Class.define("EP.app.popup.randomHost", {
 
     extend : Zen.ui.window.Window,
 
+    events: {
+        jobMessage: "qx.event.type.Data",
+        jobEnd: "qx.event.type.Data",
+        jobAbort: "qx.event.type.Data"
+    },
+
     construct:function() {
 
         this.base(arguments);
@@ -21,6 +27,9 @@ qx.Class.define("EP.app.popup.randomHost", {
             fadeOutClose:true,
             centered:true
     	})
+        this.addListener('jobMessage',this.onJobMessage,this);
+        this.addListener('jobEnd',this.onJobEnd,this);
+        this.addListener('jobAbort',this.onJobAbort,this);
 
         this.add(this.__getContent());
         this.open();
@@ -29,6 +38,23 @@ qx.Class.define("EP.app.popup.randomHost", {
     members:{
 
         __table :null,
+
+        onJobMessage:function(ev) {
+            var ip = ev.getData().message.ip;
+            var data = [ip,'','','',''];
+            this.__tableModel.addRows([data]);
+        },
+
+        onJobEnd:function(ev) {
+            var jobInfo = ev.getData().job;
+            if (jobInfo._jobCmd == 'ipv4Random') {
+                this.__buttonInfo.show();
+            }
+        },
+
+        onJobAbort:function(ev) {
+            this.close();
+        },
 
         __getContent:function() {
             var v = this.__form = new qx.ui.container.Composite();
@@ -68,11 +94,16 @@ qx.Class.define("EP.app.popup.randomHost", {
                 padding:5
             });
             left.add(this.__getNumberOfHostTextfield(),{flex:5});
-            left.add(this.__getGenerateButton());
+            left.add(this.__getButtonGenerate());
+            left.add(this.__getResetCheckbox());
             left.add(this.__getPingCheckbox());
             left.add(this.__getAutoScrollCheckbox());
-            left.add(this.__getInfoButton());
+            left.add(this.__getButtonInfo());
             return left;
+        },
+
+        __getResetCheckbox:function() {
+            return this.__resetCheckbox = new qx.ui.form.CheckBox('Reset').set({margin:4, value:true});
         },
 
         __getPingCheckbox:function() {
@@ -81,39 +112,6 @@ qx.Class.define("EP.app.popup.randomHost", {
 
         __getAutoScrollCheckbox:function() {
             return this.__autoScrollCheckBox = new qx.ui.form.CheckBox('Autoscroll').set({margin:4, value:true});
-        },
-
-        __generateButtonClick:function() {
-            var max = parseInt(this.__numberOfHostTextfield.getValue());
-            var data = [];
-            for (var i = 0; i<max; i++) {
-                var ip = CIDR.long2ip(Math.random()*4294967296);
-                data.push([ip,'','',''])
-            }
-            this.__table.getTableModel().setData([]);
-            this.__table.getTableModel().setData(data);
-            this.__tableModel = this.__table.getTableModel();
-            this.__infoButton.setEnabled(true);
-        },
-
-        __infoButtonClick:function() {
-            /*
-            var ips = [];
-            this.__table.getTableModel().getData().forEach(function(rowData,idrow) {
-                ips.push(rowData[0]);
-            });
-            new EP.app.util.Xhr('ipInfos',{ips:ips},this.__onIpInfo,this).send();
-            */
-            var ips = [];
-            this.__resolvedMax = this.__table.getTableModel().getData().length;
-            this.__resolved = 0;
-            this.__infoButton.setEnabled(false);
-            this.__generateButton.setEnabled(false);
-            var ping = this.__pingCheckbox.getValue();
-            this.__table.getTableModel().getData().forEach(function(rowData,idrow) {
-                new EP.app.util.Xhr('ipInfo/'+rowData[0],{idrow:idrow,ping:ping},this.__onIpInfo,this).send();
-            },this);
-            window.t = this.__table;
         },
 
         __onIpInfo:function(err,res) {
@@ -148,19 +146,6 @@ qx.Class.define("EP.app.popup.randomHost", {
             },this);
 
             return input;
-        },
-
-        __getGenerateButton:function() {
-            var bt = this.__generateButton = new qx.ui.form.Button("Generate randoms IPv4",'EP/search.png');
-            bt.addListener('execute',this.__generateButtonClick,this);
-            return bt;
-        },
-
-        __getInfoButton:function() {
-            var bt = this.__infoButton = new qx.ui.form.Button("Get infos",'EP/search.png');
-            bt.setEnabled(false);
-            bt.addListener('execute',this.__infoButtonClick,this);
-            return bt;
         },
 
         __getWarning:function() {
@@ -225,10 +210,23 @@ qx.Class.define("EP.app.popup.randomHost", {
             }
         },
 
+        __getButtonGenerate:function() {
+            var bt = this.__buttonGenerate = new qx.ui.form.Button("Generate randoms IPv4",'EP/search.png');
+            bt.addListener('execute',this.__clickButtonGenerate,this);
+            return bt;
+        },
+
+        __getButtonInfo:function() {
+            var bt = this.__buttonInfo = new qx.ui.form.Button("Get infos",'EP/search.png');
+            bt.hide();
+            bt.addListener('execute',this.__clickButtonInfo,this);
+            return bt;
+        },
+
         __getButtonOk:function() {
             var bt = new qx.ui.form.Button("OK", "EP/ok.png");
             bt.setEnabled(false);
-            bt.addListener('execute',this.__doSave,this);
+            bt.addListener('execute',this.__clickButtonOk,this);
             this.__buttonOk = bt;
             return bt;
         },
@@ -236,18 +234,66 @@ qx.Class.define("EP.app.popup.randomHost", {
         __getButtonCancel:function() {
             var bt = new qx.ui.form.Button("Cancel", "EP/cancel.png");
             bt.setEnabled(true);
-            bt.addListener('execute',this.__doCancel,this);
+            bt.addListener('execute',this.__clickButtonCancel,this);
             this.__buttonCancel = bt;
             return bt;
         },
 
-        __doCancel:function() {
+        __clickButtonCancel:function() {
             this.close();
         },
 
-        __doSave:function() {
+        __clickButtonOk:function() {
             // save data here
             this.close();
+        },
+
+        __clickButtonGenerate:function() {
+            if (this.__resetCheckbox.getValue()) {
+                this.__table.getTableModel().setData([]);
+            }
+            this.__tableModel = this.__table.getTableModel();
+
+            var job = {};
+            job._jobCmd = 'ipv4Random';
+            job._jobTitle = 'Generating random IPv4';
+            job._jobUid = Date.now();
+
+            // Command arguments
+            job.args = {};
+            job.args.max = parseInt(this.__numberOfHostTextfield.getValue());
+            qx.core.Init.getApplication().getJobsManager().start(job,this);
+
+            this.__buttonInfo.hide();
+        },
+
+        __clickButtonInfo:function() {
+            var ips = [];
+            this.__resolvedMax = this.__table.getTableModel().getData().length;
+            this.__resolved = 0;
+            this.__buttonInfo.setEnabled(false);
+            this.__buttonGenerate.setEnabled(false);
+            var ping = this.__pingCheckbox.getValue();
+            /*
+            this.__table.getTableModel().getData().forEach(function(rowData,idrow) {
+                new EP.app.util.Xhr('ipInfo/'+rowData[0],{idrow:idrow,ping:ping},this.__onIpInfo,this).send();
+            },this);
+            */
+
+            var job = {};
+            job._jobCmd = 'ipv4info';
+            job._jobTitle = 'Gathering IPv4 infos';
+            job._jobUid = Date.now();
+
+            // Command arguments
+            job.args = {};
+            var ips = [];
+            this.__tableModel.getData().forEach(function(row) {
+                ips.push(row[0]);
+            })
+            job.args.ips = ips;
+            qx.core.Init.getApplication().getJobsManager().start(job,this);
+
         }
     }
 });
