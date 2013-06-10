@@ -1,0 +1,25 @@
+#mapContainer svg {
+    display:block;
+    margin:0 auto;
+    background-color:#1a273f;
+}
+
+#mapContainer path {
+    fill:#0e151e;
+    stroke:#152235;
+}
+
+
+/*
+#mapContainer circle {
+    fill-opacity:0.5;
+    fill:#AAAAFF;
+    stroke:blue;
+}
+*/
+
+
+#mapContainer circle {
+    fill:#CCCCFF;
+    stroke:transparent;
+}

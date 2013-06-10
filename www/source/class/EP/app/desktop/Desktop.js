@@ -43,6 +43,9 @@ qx.Class.define("EP.app.desktop.Desktop", {
 		// Create status bar
 		this.__statusBar = new EP.app.desktop.StatusBar();
 
+        // World map
+        this.__popupEarth = new EP.app.popup.Earth();
+
 		// Add all
 		this.add(this.__menu,{left:0,top:0,right:0});
 		this.add(main,{left:0,top:30,right:0,bottom:35});

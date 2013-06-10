@@ -23,7 +23,7 @@ qx.Class.define("EP.app.popup.randomHost", {
     		relativeWidth:'70%',
     		caption:'Generate random hosts',
     		layout:new qx.ui.layout.Grow,
-    		modal:true,
+    		modal:false,
             fadeInAppear:true,
             fadeOutClose:true,
             centered:true
@@ -49,7 +49,10 @@ qx.Class.define("EP.app.popup.randomHost", {
                 this.__tableModel.setValue(1,rid,res.up);
                 this.__tableModel.setValue(3,rid,res.country);
                 this.__tableModel.setValue(4,rid,res.city);
+                this.__tableModel.setValue(5,rid,res.longitude);
+                this.__tableModel.setValue(6,rid,res.latitude);
                 this.__table.scrollCellVisible(0,res.row);
+                qx.event.message.Bus.dispatch(new qx.event.message.Message('mapUpdate',JSON.parse(JSON.stringify(res))));
             } else {
                 var ip = ev.getData().message.ip;
                 var data = [ip,'','','',''];
@@ -188,7 +191,8 @@ qx.Class.define("EP.app.popup.randomHost", {
                 width:150
             },{
                 title:'Ping',
-                id:'ping'
+                id:'ping',
+                width:70
             },{
                 title:'Reverse',
                 id:'reverse'
@@ -200,6 +204,14 @@ qx.Class.define("EP.app.popup.randomHost", {
                 title:'City',
                 id:'country',
                 width:170
+            },{
+                title:'Longitude',
+                id:'longitude',
+                hidden:true
+            },{
+                title:'Latitude',
+                id:'latitude',
+                hidden:true
             }];
 
             var table = this.__table = new EP.ui.table.Table({
@@ -223,11 +235,7 @@ qx.Class.define("EP.app.popup.randomHost", {
 
         __checkSpecialKeys : function(ev) {
             if (ev.getKeyCode() == 27) {
-                return this.__doCancel();
-            }
-
-            if (ev.getKeyCode() == 13) {
-                this.__generate();
+                return this.__clickButtonCancel();
             }
         },
 
@@ -308,6 +316,8 @@ qx.Class.define("EP.app.popup.randomHost", {
             job.args.ips = ips;
             job.args.ping = this.__pingCheckbox.getValue();
             qx.core.Init.getApplication().getJobsManager().start(job,this);
+            qx.core.Init.getApplication().getDesktop().__popupEarth.show();
+            qx.event.message.Bus.dispatch(new qx.event.message.Message('mapReset'));
 
         }
     }

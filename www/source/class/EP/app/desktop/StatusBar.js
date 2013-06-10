@@ -42,16 +42,34 @@ qx.Class.define("EP.app.desktop.StatusBar", {
 
         getEarthIcon:function() {
             /* earth map */
+
             this.__earthIcon = new qx.ui.basic.Image("EP/ico_earth_anim.gif").set({
                 marginRight:10,
-                decorator : null,
-                alignY : 'middle',
+                decorator:null,
+                alignY:'middle',
                 focusable:false,
                 height:16,
                 width:16,
                 scale:true,
                 cursor:'pointer'
             });
+
+            this.__earthIcon.addListener('click',function(ev) {
+                var w = qx.core.Init.getApplication().getDesktop().__popupEarth;
+                if (w.isVisible()) {
+                    w.hide();
+                } else {
+                    w.show();
+                }
+            });
+
+            this.__earthIcon.addListener('appear',function(ev) {
+                qx.core.Init.getApplication().getDesktop().__popupEarth.show();
+                qx.lang.Function.delay(function() {
+                    qx.core.Init.getApplication().getDesktop().__popupEarth.hide();
+                },500,this);
+            });
+
             return this.__earthIcon;
         },
 

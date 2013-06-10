@@ -75,13 +75,12 @@
         //{"uri" : "../js/uri.js"},
         //{"uri" : "../js/query.js"},
         //{"uri" : "../js/util.js"}
-        {"uri"  :  "resource/cidr.js"}
+        {"uri"  :  "resource/cidr.js"},
+        {"uri"  :  "resource/d3.v2-2.9.1.js"}
       ],
-      /*
       "add-css" : [ 
-        { "uri" : "../css/app.css" }
+        { "uri" : "resource/main.css"}
       ],
-      */
       "compile-options" : {"uris" : { "add-nocache-param": false }}
     }
   }
