@@ -6,8 +6,8 @@ qx.Class.define("EP.app.desktop.Jobs", {
         this.base(arguments);
         this.setLayout(new qx.ui.layout.VBox);
 
-        this.__FM = args.FM;
-        this.__JM = args.JM;
+        this.__FM = qx.core.Init.getApplication().getFayeManager();
+        this.__JM = qx.core.Init.getApplication().getJobsManager();
 
         /*
         var menuFile = new Zen.ui.Menu();

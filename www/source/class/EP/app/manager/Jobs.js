@@ -4,7 +4,7 @@ qx.Class.define("EP.app.manager.Jobs", {
 
     construct : function() {
         this.base(arguments);
-        this.__FM = qx.core.Init.getApplication().__FM;
+        this.__FM = qx.core.Init.getApplication().getFayeManager();
     },
 
     members:{

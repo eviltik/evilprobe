@@ -6,6 +6,7 @@
 
 /**
  * @asset(EP/*)
+ * @asset(Zen/*)
  * @asset(qx/icon/Tango/22/apps/utilities-color-chooser.png)
  * @asset(qx/icon/Tango/16/apps/utilities-terminal.png)
  * @asset(qx/icon/Tango/16/actions/list-add.png)
@@ -28,17 +29,30 @@ qx.Class.define("EP.Application", {
 
     extend : qx.application.Standalone,
 
-    members : {
-        __desktop:null,
+    properties: {
+        soundVolume: {
+            check:'Number',
+            event:'changeVolume',
+            nullable:false,
+            init:0.5
+        },
+        session: {
+            /* express session id */
+            nullable:false,
+            init:false
+        },
+        desktop: {
+            nullable:false
+        },
+        jobsManager: {
+            nullable:false
+        },
+        fayeManager:{
+            nullable:false
+        }
+    },
 
-        /* faye manager, initialized by __desktop after login succeed */
-        __FM: null,
-
-        /* jobs manager, initialized by __desktop after login succeed */
-        __JM: null,
-
-        /* express session id */
-        __session:null,
+    members: {
 
         main : function() {
             this.base(arguments);
@@ -54,25 +68,20 @@ qx.Class.define("EP.Application", {
                blockerOpacity: 0.6
             });
 
+            this.addListener('changeVolume',this.__onChangeVolume,this);
+
             var loginPopup = new EP.app.popup.Login();
             loginPopup.addListener('authenticated',function(ev) {
-                this.__session = ev.getData().user.session;
-                this.__desktop = new EP.app.desktop.Desktop();
-                this.getRoot().add(this.__desktop,{edge:0});
+                this.setSoundVolume(ev.getData().user.soundVolume||0.5);
+                this.setSession(ev.getData().user.session);
+                this.setDesktop(new EP.app.desktop.Desktop());
+                this.getRoot().add(this.getDesktop(),{edge:0});
             },this);
         },
 
-        getDesktop:function() {
-            return this.__desktop;
-        },
-
-        getJobsManager:function() {
-            return this.__JM;
-        },
-
-        getSession:function() {
-            return this.__session;
+        __onChangeVolume:function(ev) {
+            if (!this.getSession()) return;
+            new EP.app.util.Xhr('user/update/soundVolume',{value:ev.getData()},null,this).send();
         }
-
     }
 });

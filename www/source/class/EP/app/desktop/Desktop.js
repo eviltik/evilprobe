@@ -12,21 +12,16 @@ qx.Class.define("EP.app.desktop.Desktop", {
 
 
 		// Initialize faye manager
-		this.__FM = new EP.app.manager.Faye();
-		qx.core.Init.getApplication().__FM = this.__FM;
+		qx.core.Init.getApplication().setFayeManager(new EP.app.manager.Faye());
 
 		// Initialize jobs manager
-		this.__JM = new EP.app.manager.Jobs();
-		qx.core.Init.getApplication().__JM = this.__JM;
+		qx.core.Init.getApplication().setJobsManager(new EP.app.manager.Jobs());
 
         // Create menu bar
 		this.__menu = new EP.app.desktop.Menu();
 
 		// Create jobs list
-		this.__jobsList = new EP.app.desktop.Jobs({
-			FM:this.__FM,
-			JM:this.__JM
-		})
+		this.__jobsList = new EP.app.desktop.Jobs();
 
 		// Workspaces container
 		this.__tabViewer = new EP.app.desktop.Workspaces();
