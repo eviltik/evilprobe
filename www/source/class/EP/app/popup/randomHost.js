@@ -119,27 +119,46 @@ qx.Class.define("EP.app.popup.randomHost", {
             });
             left.add(this.__getNumberOfHostTextfield(),{flex:5});
             left.add(this.__getButtonGenerate());
-            left.add(this.__getResetCheckbox());
-            left.add(this.__getPingCheckbox());
+            left.add(this.__getCheckboxReset());
+            left.add(this.__getCheckboxPing());
+            left.add(this.__getCheckboxReverse());
             left.add(this.__getAutoScrollCheckbox());
             left.add(this.__getButtonInfo());
             return left;
         },
 
-        __getResetCheckbox:function() {
-            return this.__resetCheckbox = new qx.ui.form.CheckBox('Reset').set({margin:4, value:true});
+        __getCheckboxReset:function() {
+            var c = this.__checkboxReset = new qx.ui.form.CheckBox('Reset').set({margin:4, value:true});
+            return c;
         },
 
-        __getPingCheckbox:function() {
-            return this.__pingCheckbox = new qx.ui.form.CheckBox('Ping (slower)').set({margin:4, value:false});
+        __getCheckboxPing:function() {
+            var c = this.__checkboxPing = new qx.ui.form.CheckBox('Ping (slower)').set({margin:4, value:false});
+            c.addListener('changeValue',this.__onCheckboxPingChangeValue,this);
+            return c;
+        },
+
+        __onCheckboxPingChangeValue:function(ev) {
+            this.__table.getTableColumnModel().setColumnVisible(1,ev.getData());
+        },
+
+        __getCheckboxReverse:function() {
+            var c = this.__checkboxReverse = new qx.ui.form.CheckBox('Reverse DNS lookup').set({margin:4, value:false});
+            c.addListener('changeValue',this.__onCheckboxReverseChangeValue,this);
+            return c;
+        },
+
+        __onCheckboxReverseChangeValue:function(ev) {
+            this.__table.getTableColumnModel().setColumnVisible(2,ev.getData());
         },
 
         __getAutoScrollCheckbox:function() {
-            return this.__autoScrollCheckBox = new qx.ui.form.CheckBox('Autoscroll').set({margin:4, value:true});
+            var c = this.__autoScrollCheckBox = new qx.ui.form.CheckBox('Autoscroll').set({margin:4, value:true});
+            return c;
         },
 
         __onIpInfo:function(err,res) {
-            this.__resolved++;
+            this.__Reversed++;
             var rid = parseInt(res.data.idrow);
             this.__tableModel.setValue(2,rid,res.data.reverse);
             this.__tableModel.setValue(1,rid,res.data.up);
@@ -148,12 +167,12 @@ qx.Class.define("EP.app.popup.randomHost", {
 
             this.__table.scrollCellVisible(0,res.data.idrow);
 
-            if (this.__resolved == this.__resolvedMax) {
+            if (this.__Reversed == this.__ReversedMax) {
                 this.__infoButton.setEnabled(true);
                 this.__generateButton.setEnabled(true);
-                this.__table.setAdditionalStatusBarText(', fetching information '+this.__resolved+'/'+this.__resolvedMax+': done.');
+                this.__table.setAdditionalStatusBarText(', fetching information '+this.__Reversed+'/'+this.__ReversedMax+': done.');
             } else {
-                this.__table.setAdditionalStatusBarText(', fetching information '+this.__resolved+'/'+this.__resolvedMax);
+                this.__table.setAdditionalStatusBarText(', fetching information '+this.__Reversed+'/'+this.__ReversedMax);
             }
         },
 
@@ -192,7 +211,8 @@ qx.Class.define("EP.app.popup.randomHost", {
             },{
                 title:'Ping',
                 id:'ping',
-                width:70
+                width:70,
+                hidden:true
             },{
                 title:'Reverse',
                 id:'reverse'
@@ -278,7 +298,7 @@ qx.Class.define("EP.app.popup.randomHost", {
         },
 
         __clickButtonGenerate:function() {
-            if (this.__resetCheckbox.getValue()) {
+            if (this.__checkboxReset.getValue()) {
                 this.__table.getTableModel().setData([]);
             }
             this.__tableModel = this.__table.getTableModel();
@@ -298,8 +318,8 @@ qx.Class.define("EP.app.popup.randomHost", {
 
         __clickButtonInfo:function() {
             var ips = [];
-            this.__resolvedMax = this.__table.getTableModel().getData().length;
-            this.__resolved = 0;
+            this.__ReversedMax = this.__table.getTableModel().getData().length;
+            this.__Reversed = 0;
             this.__left.setEnabled(false);
 
             var job = {};
@@ -314,7 +334,8 @@ qx.Class.define("EP.app.popup.randomHost", {
                 ips.push({row:i,ip:row[0]});
             })
             job.args.ips = ips;
-            job.args.ping = this.__pingCheckbox.getValue();
+            job.args.ping = this.__checkboxPing.getValue();
+            job.args.reverse = this.__checkboxReverse.getValue();
             qx.core.Init.getApplication().getJobsManager().start(job,this);
             qx.core.Init.getApplication().getDesktop().__popupEarth.show();
             qx.event.message.Bus.dispatch(new qx.event.message.Message('mapReset'));
