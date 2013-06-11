@@ -13,10 +13,15 @@ qx.Class.define("EP.app.desktop.StatusBar", {
         tb.add(new qx.ui.toolbar.Separator());
         tb.addSpacer();
 
+        this.__initSound();
+
         tb.add(this.getEarthIcon());
         tb.add(this.getSoundIcon());
         tb.add(this.getNetworkIcon());
         this.add(tb);
+
+        qx.event.message.Bus.subscribe('playSound',this.playSound,this);
+
     },
     members:{
 
@@ -27,6 +32,33 @@ qx.Class.define("EP.app.desktop.StatusBar", {
 
         __earthIcon:null,
         __soundIcon:null,
+
+        __beepUri: null,
+
+        playSound:function() {
+            var beep = this.__sounds[this.__soundPointer];
+            var v = qx.core.Init.getApplication().getSoundVolume();
+            beep.setVolume(v);
+            beep.play();
+            this.__soundPointer++;
+            if (this.__soundPointer == 10) {
+                this.__soundPointer = 0;
+            }
+        },
+
+        __initSound:function() {
+            if (qx.core.Environment.get("html.audio.mp3")) {
+                var u = qx.util.ResourceManager.getInstance().toUri("EP/sound/6370.mp3");
+                this.__sounds = [];
+                this.__soundPointer = 0;
+                for (var i = 0; i<10 ; i++) {
+                    // preload
+                    qx.lang.Function.delay(function() {
+                        this.__sounds.push(new qx.bom.media.Audio(u));
+                    },i*100,this);
+                }
+            }
+        },
 
         networkIconFlash:function() {
             if (this.__networkIconTimer) {
@@ -75,12 +107,13 @@ qx.Class.define("EP.app.desktop.StatusBar", {
 
         getSoundIcon:function() {
             /* sound volume */
+
             var sliderSound = new qx.ui.form.Slider().set({
                 minimum: 0,
                 maximum: 100,
                 singleStep: 5,
                 pageStep: 10,
-                value: 100,
+                value: qx.core.Init.getApplication().getSoundVolume()*100,
                 orientation:'vertical',
                 decorator:null
             });
@@ -90,11 +123,12 @@ qx.Class.define("EP.app.desktop.StatusBar", {
                 soundIcon.setUserData('value',100-v);
                 if (v == 100) {
                     this.__soundIcon.setSource('EP/ico_sound_off.png');
-                    return qx.core.Init.getApplication().__soundVolume = 0;
+                    return qx.core.Init.getApplication().setSoundVolume(0);
                 } else {
                     this.__soundIcon.setSource('EP/ico_sound_on.png');
                 }
-                qx.core.Init.getApplication().__soundVolume = (100 - v)/100;
+                qx.core.Init.getApplication().setSoundVolume((100 - v)/100);
+                qx.event.message.Bus.dispatch(new qx.event.message.Message('playSound'));
             },this);
 
             var sliderContainer = new qx.ui.popup.Popup();
@@ -121,8 +155,7 @@ qx.Class.define("EP.app.desktop.StatusBar", {
                 sliderContainer.show();
             })
 
-            soundIcon.setUserData('value',100);
-            qx.core.Init.getApplication().__soundVolume = 1;
+            soundIcon.setUserData('value',qx.core.Init.getApplication().getSoundVolume()*100);
 
             return soundIcon;
         },
