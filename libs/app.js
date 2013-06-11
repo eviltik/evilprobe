@@ -20,7 +20,7 @@ var init = function() {
 
     app.post('*',function(req,res,next) {
         if (!req.session||!req.session.user||!req.session.user._id) {
-            if (!req.url.match(/\/auth\//)) {
+            if (!req.url.match(/user\/authCheck|user\/login/)) {
                 return res.send({error:'Please authenticate'});
             }
         }
@@ -46,8 +46,10 @@ var init = function() {
     var ipInfo = require('./ipInfo');
 
     // Authentication and session related webservices
-    app.post('/ws/auth/check',User.ws.check);
-    app.post('/ws/auth/login',User.ws.login);
+    app.post('/ws/user/authCheck',User.ws.authCheck);
+    app.post('/ws/user/login',User.ws.login);
+    app.post('/ws/user/logout',User.ws.logout);
+    app.post('/ws/user/update/:key',User.ws.update);
 
     // Workspaces management related webservices
     app.post('/ws/workspace/search',Workspace.ws.search);

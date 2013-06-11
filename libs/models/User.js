@@ -1,4 +1,5 @@
-var log = require('../logger.js').log;
+var log = require('../logger').log;
+var util = require('../jsUtils');
 var mongoose =  require('mongoose');
 var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
@@ -7,7 +8,8 @@ var SALT_WORK_FACTOR = 10;
 /* schema */
 var schema = mongoose.Schema({
     login: String,
-    pass: String
+    pass: String,
+    soundVolume: Number
 })
 
 schema.index({login:1});
@@ -18,7 +20,7 @@ var User = mongoose.model('User',schema);
 /* hooks */
 schema.pre('save',function(next) {
     // No pass ? not creating a new user, exiting
-    if (!this.pass) return next();
+    if (this.skipPass) return next();
 
     // Pass ? let's hash it !
     bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
@@ -55,15 +57,14 @@ User.count(function(err,nbUser) {
 /* public methods */
 User.ws = {}
 
-User.ws.check = function(req,res,next) {
+User.ws.authCheck = function(req,res,next) {
     var authenticated = false;
     if (req.session && req.session.authenticated) {
+        console.log(req.session.user.soundVolume);
         res.send({
             authenticated:true,
-            user:{
-                session:req.session.id,
-                login:req.session.user.login
-            }
+            authMethod:'check',
+            user:JSON.parse(JSON.stringify(req.session.user))
         });
     } else {
         res.send({authenticated:false});
@@ -85,14 +86,14 @@ User.ws.login = function(req,res,next) {
             if (isMatch) {
                 req.session.user = {
                     session:req.session.id,
-                    login:user.login
+                    login:user.login,
+                    soundVolume:user.soundVolume
                 }
                 req.session.authenticated = Date.now();
-                authenticated = true;
-                // TODO: put that in mongo db with TTL !
                 global.sessions[req.session.id] = user._id;
                 res.send({
-                    authenticated:authenticated,
+                    authMethod:'login',
+                    authenticated:true,
                     user:req.session.user
                 });
                 req.session.user._id = user._id;
@@ -105,5 +106,26 @@ User.ws.login = function(req,res,next) {
     });
 }
 
+User.ws.update = function(req,res,next) {
+    User.findOne({_id:req.session.user._id},function(err,user) {
+        if (err) {
+            return res.sent({ok:false,error:err});
+        }
+        user[req.params.key] = req.body.value;
+        user.skipPass = true;
+        user.save(function(err) {
+            if (err) res.sent({ok:false,error:err});
+            var o = {};
+            o[req.params.key] = req.body.value;
+            o.ok = true;
+            req.session.user[req.params.key] = req.body.value;
+            return res.send(o);
+        });
+    });
+}
+
+User.ws.logout = function(req,res,next) {
+    res.send({ok:true});
+}
 
 module.exports.User = User;
