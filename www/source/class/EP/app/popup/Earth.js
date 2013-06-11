@@ -32,7 +32,6 @@ qx.Class.define("EP.app.popup.Earth", {
     	});
 
         this.addListener('resize',this.__onAppear,this);
-        //this.addListener('mouseover',this.__onMouseOver,this);
         qx.event.message.Bus.subscribe('mapUpdate',this.mapUpdate,this);
         qx.event.message.Bus.subscribe('mapReset',this.mapReset,this);
 
@@ -46,10 +45,6 @@ qx.Class.define("EP.app.popup.Earth", {
         __map:null,
         __projection:null,
         __data:[],
-
-        __onMouseOver:function(ev) {
-            console.log(ev.getRelatedTarget());
-        },
 
         __mini:function() {
             var myScreen = qx.core.Init.getApplication().getRoot().getBounds();
@@ -66,6 +61,7 @@ qx.Class.define("EP.app.popup.Earth", {
         },
 
         mapUpdate:function(ev) {
+            qx.event.message.Bus.dispatch(new qx.event.message.Message('playSound'));
             var lat = ev.getData().latitude;
             var longi = ev.getData().longitude;
             if (!lat||!longi) return;
