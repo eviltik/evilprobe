@@ -105,7 +105,7 @@ var ipv4Info = function(opts) {
         rec.i = i++;
         rec.max = max;
         rec.ping = opts.args.ping == "true" || opts.args.ping === true;
-        rec.resolve = opts.args.resolve == "true" || opts.args.resolve === true;
+        rec.reverse = opts.args.reverse == "true" || opts.args.reverse === true;
         this.q.add(fetchInfo.bind(this),rec);
     }.bind(this));
 
