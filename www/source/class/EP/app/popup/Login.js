@@ -45,8 +45,8 @@ qx.Class.define("EP.app.popup.Login", {
         __buttonOk:null,
         __labelResponse:null,
         __labelWait:null,
-        __urlAuthLogin:'auth/login',
-        __urlAuthCheck:'auth/check',
+        __urlLogin:'user/login',
+        __urlAuthCheck:'user/authCheck',
 
         __onAuthCheck:function(err,res) {
             if (!res||res.authenticated == 'undefined') {
@@ -199,7 +199,7 @@ qx.Class.define("EP.app.popup.Login", {
 
         __doLogin : function() {
             if (!this.__isValid()) return;
-            new EP.app.util.Xhr(this.__urlAuthLogin,this.__data,this.__onLogin,this).send();
+            new EP.app.util.Xhr(this.__urlLogin,this.__data,this.__onLogin,this).send();
         },
 
         __onLogin : function(err,res) {
