@@ -11,13 +11,7 @@ var ipInfo = {};
 ipInfo.ws = {};
 ipInfo.do = {};
 
-var geoCheck = function(ip,next) {
-    geoip.lookup(ip,next);
-}
 
-var reverseLookup = function(ip,next) {
-    dns.reverse(ip,next);
-}
 
 info = function(args,cb) {
 
@@ -35,13 +29,16 @@ info = function(args,cb) {
 
     async.series([
         function(next) {
-            //console.log('geoCheck ',ip);
-            geoCheck(args.ip,next);
+            geoip.lookup(args.ip,next);
         },
 
         function(next) {
-            //console.log('reverse ',ip);
-            reverseLookup(args.ip,next);
+            if (!args.reverse) {
+                return setTimeout(function(){
+                    next();
+                }.bind(this),Math.random()*1000);
+            }
+            dns.reverse(args.ip,next);
         }
 
     ],function(err,arr) {
@@ -60,7 +57,7 @@ info = function(args,cb) {
         }
 
         var rev = arr[1];
-        if (rev&&rev[0]) {
+        if (rev && rev[0]) {
             // reverse
             o.reverse = rev[0]||'';
         }
@@ -78,7 +75,7 @@ info = function(args,cb) {
 var displayProgress = function(args) {
     var o = this.q.stats();
     //if (!paused) {
-        o._message = lastMessage;
+        o._message = this.lastMessage;
     //} else {
     //    o._message = 'Paused';
     //    o._status='Paused';
@@ -107,7 +104,8 @@ var ipv4Info = function(opts) {
     opts.args.ips.forEach(function(rec) {
         rec.i = i++;
         rec.max = max;
-        rec.ping = opts.args.ping;
+        rec.ping = opts.args.ping == "true" || opts.args.ping === true;
+        rec.resolve = opts.args.resolve == "true" || opts.args.resolve === true;
         this.q.add(fetchInfo.bind(this),rec);
     }.bind(this));
 
@@ -117,8 +115,8 @@ var ipv4Info = function(opts) {
     }.bind(this));
 
     this.q.on('jobEnd',function(args) {
-        lastMessage = 'Done: '+args.ip;
-    });
+        this.lastMessage = 'Done: '+args.ip;
+    }.bind(this));
 
     this.progressTimer = setInterval(displayProgress.bind(this),1000);
 
