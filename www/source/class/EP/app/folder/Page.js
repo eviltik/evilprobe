@@ -14,10 +14,11 @@
             layout:new qx.ui.layout.VBox(5),
             showCloseButton:true,
             margin:0,
-            padding:0
+            padding:5
         });
 
-        var menu = this.__menu = new EP.app.folder.Menu();
+        // menu no longer used for the moment
+        // var menu = this.__menu = new EP.app.folder.Menu();
 
         var tree = this.__tree = new EP.app.folder.Tree(workspaceData);
         var table = this.__table = new EP.app.folder.Table(workspaceData,tree);
@@ -26,7 +27,6 @@
         container.add(tree);
         container.add(table,3);
 
-        this.add(menu);
         this.add(container,{flex:6});
 
         this.__button = this.getChildControl('button');
