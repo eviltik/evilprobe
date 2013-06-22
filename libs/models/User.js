@@ -60,7 +60,6 @@ User.ws = {}
 User.ws.authCheck = function(req,res,next) {
     var authenticated = false;
     if (req.session && req.session.authenticated) {
-        console.log(req.session.user.soundVolume);
         res.send({
             authenticated:true,
             authMethod:'check',
