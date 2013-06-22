@@ -120,6 +120,8 @@ Folder.do.load = function(args,cb) {
 Folder.do.create = function(args,cb) {
     if (net.isIPv4(args.name)) {
         args.longip = cidr.ip2long(args.name);
+    } else {
+        args.longip = 0;
     }
     var w = new Folder(args);
     w.save(function(err,r) {
@@ -133,6 +135,8 @@ Folder.do.update = function(args,cb) {
 
     if (net.isIPv4(args.fields.name)) {
         args.fields.longip = cidr.ip2long(args.fields.name);
+    } else {
+        args.fields.longip = 0;
     }
 
     var fields = args.fields;
