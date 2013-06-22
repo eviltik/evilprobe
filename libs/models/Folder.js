@@ -2,7 +2,7 @@ var log = require('../logger.js').log;
 var net = require('net');
 var cidr = require('../cidr');
 var mongoose =  require('mongoose');
-var tree = require('mongoose-tree');
+var tree = require('mongoose-tree2');
 mongoose.set('debug', false);
 
 
