@@ -1,4 +1,6 @@
 var log = require('../logger.js').log;
+var net = require('net');
+var cidr = require('../cidr');
 var mongoose =  require('mongoose');
 var tree = require('mongoose-tree');
 mongoose.set('debug', false);
@@ -9,6 +11,9 @@ var schema = mongoose.Schema({
     name:       {
         type:String,
         trim:true
+    },
+    longip: {
+        type:Number
     },
     opened:     Boolean,
     tsOpened:   Date,
@@ -26,7 +31,7 @@ var schema = mongoose.Schema({
 })
 
 schema.plugin(tree);
-schema.index({name:1,data:1,creator:1,workspace:1,path:1});
+schema.index({name:1,longip:1,data:1,creator:1,workspace:1,path:1,type:1});
 
 
 /* model */
@@ -77,6 +82,7 @@ Folder.do.load = function(args,cb) {
 
         var fs = [];
         var i = 0;
+        var j = 0;
 
         r.forEach(function(f) {
 
@@ -94,13 +100,14 @@ Folder.do.load = function(args,cb) {
             var ff = new Folder(f);
             ff.getChildrenTree(args,function(err,c) {
                 f.childs = c;
-                fs.push(f);
+                fs[this.j]=f;
                 if (i == r.length-1) {
                     fs = cleanItems(fs);
                     return cb(null,fs);
                 }
                 i++;
-            })
+            }.bind({j:j}))
+            j++;
         });
     }
 
@@ -111,6 +118,9 @@ Folder.do.load = function(args,cb) {
 }
 
 Folder.do.create = function(args,cb) {
+    if (net.isIPv4(args.name)) {
+        args.longip = cidr.ip2long(args.name);
+    }
     var w = new Folder(args);
     w.save(function(err,r) {
         cb(err,w,r);
@@ -186,7 +196,9 @@ Folder.ws.load = function(req,res,next) {
             parent:null
         },
         columns:'_id name creator type opened data',
-        options:{}
+        options:{
+            sort:{'type':1,'longip':1,'name':1}
+        }
     };
 
     if (req.body.filters) {
