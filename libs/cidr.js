@@ -56,7 +56,8 @@ var get = function(range,cb) {
 
 module.exports = {
     get:get,
-    long2ip:long2ip
+    long2ip:long2ip,
+    ip2long:ip2long
 }
 
 
