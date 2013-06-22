@@ -27,6 +27,7 @@
     "express": "latest",
     "faye": "latest",
     "mongoose":"latest",
+    "mongoose-tree2":"latest",
     "xml2json":"latest",
     "pinger":"latest"
  },  
