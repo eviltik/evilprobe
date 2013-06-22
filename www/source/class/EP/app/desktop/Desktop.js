@@ -43,7 +43,7 @@ qx.Class.define("EP.app.desktop.Desktop", {
 
 		// Add all
 		this.add(this.__menu,{left:0,top:0,right:0});
-		this.add(main,{left:0,top:30,right:0,bottom:35});
+		this.add(main,{left:0,top:37,right:0,bottom:35});
 		this.add(this.__statusBar,{left:0,bottom:0,right:0});
 
         /* drag & drop indicator, used by tree when dragging nodes */
@@ -52,7 +52,8 @@ qx.Class.define("EP.app.desktop.Desktop", {
             opacity:0.5,
             zIndex:100,
             droppable:true
-        })
+        });
+
         ddi.setLayoutProperties({left: -1000, top: -1000});
         ddi.setDecorator(new qx.ui.decoration.Decorator().set({
             widthTop: 1,
@@ -60,7 +61,8 @@ qx.Class.define("EP.app.desktop.Desktop", {
             colorTop: "black"
         }));
         this.add(ddi);
-        this.__indicator = ddi;
+        qx.core.Init.getApplication().setIndicator(ddi);
+
 
     },
 
