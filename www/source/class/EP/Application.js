@@ -49,6 +49,9 @@ qx.Class.define("EP.Application", {
         },
         fayeManager:{
             nullable:false
+        },
+        indicator:{
+            nullable:false
         }
     },
 
