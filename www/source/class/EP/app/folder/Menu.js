@@ -3,8 +3,11 @@ qx.Class.define("EP.app.folder.Menu", {
     extend : qx.ui.menubar.MenuBar,
 
     construct:function() {
+
+        // menu under each workspace, no longer used atm
+
         this.base(arguments);
-        this.set({height:32})
+        this.set({height:32,padding:5});
         this.add(this.__getMenuWorkspace());
     },
 
@@ -16,10 +19,14 @@ qx.Class.define("EP.app.folder.Menu", {
         __workspaceMenuBtRecents:null,
         __helpMenu:null,
         __preferenceMenu:null,
-
+        __windowRandomHost:null,
 
         __getMenuWorkspace:function() {
-            var m = new Zen.ui.menubar.Button('Bla',null,this.__getMenuWorkspaceItems());
+            var m = new qx.ui.form.Button('Random hosts');
+            m.addListener('execute',function() {
+                this.__windowRandomHost.show();
+            },this);
+
             this.__workspaceMenu = m;
             return m;
         },
