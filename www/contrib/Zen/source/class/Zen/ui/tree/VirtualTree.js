@@ -161,7 +161,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         },
 
         __onSelectionChange:function(ev) {
-            this.__selected = this.getSelection().getItem(0);
+            this.__selected = this.getSelection();
             this.fireDataEvent('nodeSelected',this.__selected);
         },
 
