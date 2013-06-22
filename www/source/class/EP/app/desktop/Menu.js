@@ -3,14 +3,24 @@ qx.Class.define("EP.app.desktop.Menu", {
     extend : qx.ui.menubar.MenuBar,
 
     construct:function() {
+
         this.base(arguments);
 
-        this.set({height:32})
+        this.set({
+            height:32,
+            margin:2,
+            padding:2
+        });
+
         this.add(this.__getMenuWorkspace());
         this.add(this.__getMenuPreferences());
         this.add(this.__getMenuHelp());
+        this.add(new qx.ui.toolbar.Separator());
+        this.add(this.__getButtonRandomHost());
 
         qx.event.message.Bus.subscribe('workspaceRecentsReload',this.__workspaceRecentsLoad,this);
+
+        this.__windowRandomHost = new EP.app.popup.randomHost();
 
     },
 
@@ -22,22 +32,28 @@ qx.Class.define("EP.app.desktop.Menu", {
         __workspaceMenuBtRecents:null,
         __helpMenu:null,
         __preferenceMenu:null,
+        __windowRandomHost:null,
+
+        __getButtonRandomHost:function() {
+            var m = this.__buttonRandomHost = new qx.ui.form.Button('Random Host');
+            m.addListener('execute',function() {
+                this.__windowRandomHost.show();
+            },this)
+            return m;
+        },
 
         __getMenuWorkspace:function() {
-            var m = new Zen.ui.menubar.Button('_Workspace',null,this.__getMenuWorkspaceItems());
-            this.__workspaceMenu = m;
+            var m = this.__workspaceMenu = new Zen.ui.menubar.Button('_Workspace',null,this.__getMenuWorkspaceItems());
             return m;
         },
 
         __getMenuPreferences:function() {
-            var m = new Zen.ui.menubar.Button('_Preferences',null,this.__getMenuPreferencesItems());
-            this.__preferenceMenu = m;
+            var m = this.__preferenceMenu = new Zen.ui.menubar.Button('_Preferences',null,this.__getMenuPreferencesItems());
             return m;
         },
 
         __getMenuHelp:function() {
-            var m = new Zen.ui.menubar.Button('_Help',null,this.__getMenuHelpItems());
-            this.__helpMenu = m;
+            var m = this.__helpMenu = new Zen.ui.menubar.Button('_Help',null,this.__getMenuHelpItems());
             return m;
         },
 
