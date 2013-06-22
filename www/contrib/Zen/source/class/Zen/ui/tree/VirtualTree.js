@@ -3,11 +3,12 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
     extend : qx.ui.tree.VirtualTree,
 
     events : {
-        nodeCreated: "qx.event.type.Data",
-        nodeUpdated: "qx.event.type.Data",
-        nodeDeleted: "qx.event.type.Data",
-        nodeEmptied: "qx.event.type.Data",
-        nodeSelected: "qx.event.type.Data"
+        nodeCreated:    "qx.event.type.Data",
+        nodeUpdated:    "qx.event.type.Data",
+        nodeDeleted:    "qx.event.type.Data",
+        nodeEmptied:    "qx.event.type.Data",
+        nodeSelected:   "qx.event.type.Data",
+        dropSomething:  "qx.event.type.Data"
     },
 
     construct:function() {
@@ -47,6 +48,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         this.setIconOptions({converter:this.iconConverter});
 
         this.__configureNode(this.__tm);
+        this.setSelectionMode("multi");
 
         /* listeners */
 
@@ -61,6 +63,8 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         this.addListener('nodeEmptied',this.__nodeEmptied,this);
         this.addListener('open',this.__nodeOpened,this);
         this.addListener('close',this.__nodeClosed,this);
+
+        this.addListener('dropSomething',this.__dropSomething,this);
 
         /* TODO : drag & drop
         this.addListener('dragstart', this.__nodeDragStart,this);
@@ -96,6 +100,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         bindItem : function(controller, node, id) {
             controller.bindDefaultProperties(node, id);
             node.getModel().setUserData("qxnode", node);
+            node.getModel().setUserData("tree", this);
         },
 
         createItem : function() {
@@ -371,20 +376,24 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             return ''
         },
 
-        __nodeCreate:function(type) {
+        __nodeCreate:function(type,data) {
 
+            var gotData = typeof data === 'object';
             var selected = this.getSelection().getItem(0);
             var parentItem = selected||this.__root;
 
-            var defaultValue = this.nodeCreateDefaultValue(type);
+            if (!data) {
+                data = {};
+                data.name = this.nodeCreateDefaultValue(type);
+                data.type = type || 'default'
+            }
 
             var n = qx.data.marshal.Json.createModel(this.extendDataItem({
                 _id:null,
-                name: defaultValue,
+                name: data.name,
                 childs: [],
-                type:type||'default',
-                opened:true,
-                resume:''
+                type : data.type,
+                opened:true
             }));
 
             var nodeId = parentItem.getChilds().push(n);
@@ -392,8 +401,11 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             this.refresh();
             this.openNode(parentItem);
             this.__configureNode(node,parentItem);
-            this.getSelection().setItem(0,node);
-            qx.lang.Function.delay(this.__nodeEdit,10,this);
+            if (!gotData) {
+                this.getSelection().setItem(0,node);
+                qx.lang.Function.delay(this.__nodeEdit,10,this);
+            }
+            return node;
         },
 
         __nodeDeleteConfirm:function() {
@@ -411,24 +423,15 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         },
 
         __nodeDelete:function() {
-            if (!this.getSelection().getItem(0)) {
-                // no selection
-                return;
+            for (var i = 0;i<this.getSelection().getLength();i++) {
+                var item = this.getSelection().getItem(i);
+                if (item) {
+                    var parentNode = item.getUserData('parent');
+                    if (parentNode) {
+                        this.fireDataEvent('nodeDeleted',item);
+                    }
+                }
             }
-
-            var item = this.getSelection().getItem(0);
-            if (!item) {
-                // selection is not an item ????
-                return;
-            }
-
-            var parentNode = item.getUserData('parent');
-            if (!parentNode) {
-                // root ???
-                return;
-            }
-
-            this.fireDataEvent('nodeDeleted',item);
         },
 
         __nodeEmpty:function() {
@@ -648,6 +651,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             //ev.addType("item")
             ev.addAction("move");
             this.__nodeDragging = ev.getOriginalTarget();
+            this.setOpacity(0.5);
         },
 
         __nodeDragOver:function(ev) {
@@ -688,9 +692,35 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         },
 
         __indicatorDrop:function(ev) {
+            console.log('indicator drop');
         },
 
         __nodeDrop:function(ev) {
+        },
+
+        __dropSomething:function(ev) {
+            var data = ev.getData();
+
+            var parentId;
+
+            if (data.parent && data.parent.getModel) {
+                parentId = data.parent.getModel().get_id();
+            }
+
+            var items = data.items;
+
+            for (var i = 0;i<items.length;i++) {
+                var d = {};
+                var node = items[i];
+                d.name = node.name;
+                d.type = node.type;
+
+                if (parentId && parentId != "null") {
+                    d.parent = parentId;
+                }
+                var node = this.__nodeCreate('host',d);
+                new EP.app.util.Xhr(this.getUrl('create'),d,this.__onNodeCreated,{self:this,node:node}).send();
+            }
         }
     }
 });
