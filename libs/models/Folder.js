@@ -130,6 +130,11 @@ Folder.do.create = function(args,cb) {
 Folder.do.update = function(args,cb) {
     var filters = args.filters||{};
     if (!args.fields) return cb('No fields specified');
+
+    if (net.isIPv4(args.fields.name)) {
+        args.fields.longip = cidr.ip2long(args.fields.name);
+    }
+
     var fields = args.fields;
     var options = args.options;
 
