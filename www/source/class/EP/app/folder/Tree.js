@@ -33,6 +33,7 @@ qx.Class.define("EP.app.folder.Tree", {
         bindItem : function(controller, node, id) {
             controller.bindDefaultProperties(node, id);
             node.getModel().setUserData("qxnode", node);
+            node.getModel().setUserData("tree", this);
         },
 
         createItem : function() {
@@ -42,7 +43,6 @@ qx.Class.define("EP.app.folder.Tree", {
         extendDataItem:function(r) {
             r.resume = '';
             if (r.type == 'port') {
-                r.resume = r.data.banner;
                 if (!r.data.protocol) r.data.protocol='tcp';
                 r.name = r.name+'/'+r.data.protocol+' '+r.data.portName.toLowerCase();
             }
@@ -61,7 +61,7 @@ qx.Class.define("EP.app.folder.Tree", {
             var type = '';
             var item = this.getSelection().getItem(0);
             if (item) type = item.getType();
-
+            var multi = this.getSelection().getLength()>1;
 
             var contextMenu = new qx.ui.menu.Menu();
 
@@ -85,25 +85,32 @@ qx.Class.define("EP.app.folder.Tree", {
                 contextMenu.add(menuPortScan);
                 contextMenu.add(new qx.ui.menu.Separator());
 
-            } else if (type == 'port') {
+                if (type == 'network') {
+                    var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.png');
+                    menuNewHost.addListener('execute',this.__onMenuNewHost,this);
+                    contextMenu.add(menuNewHost);
+
+                    contextMenu.add(new qx.ui.menu.Separator());
+                }
+
+                if (multi) menuEdit.setEnabled(false);
+
+            } else if (type == 'port' || multi) {
 
                 menuEdit.setEnabled(false);
 
             } else {
                 var menuNewFolder = new qx.ui.menu.Button("New folder",'EP/folder_opened.png');
                 var menuNewNetwork = new qx.ui.menu.Button("New network",'EP/network.png');
-                var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.gif');
-                var menuRandomHost = new qx.ui.menu.Button("Random hosts",'EP/host.gif');
+                var menuNewHost = new qx.ui.menu.Button("New host",'EP/host.png');
 
                 menuNewFolder.addListener('execute',this.__onMenuNewFolder,this);
                 menuNewNetwork.addListener('execute',this.__onMenuNewNetwork,this);
                 menuNewHost.addListener('execute',this.__onMenuNewHost,this);
-                menuRandomHost.addListener('execute',this.__onMenuRandomHost,this);
 
                 contextMenu.add(menuNewFolder);
                 contextMenu.add(menuNewNetwork);
                 contextMenu.add(menuNewHost);
-                contextMenu.add(menuRandomHost);
                 contextMenu.add(new qx.ui.menu.Separator());
 
             }
