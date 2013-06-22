@@ -6,7 +6,11 @@ qx.Class.define("EP.app.desktop.StatusBar", {
         this.base(arguments);
         this.set({
             layout:new qx.ui.layout.Grow(),
-            height:32
+            height:32,
+            margin:3,
+            marginBottom:0,
+            padding:2,
+            decorator:'menu'
         })
 
         var tb = new qx.ui.toolbar.ToolBar();
@@ -41,7 +45,7 @@ qx.Class.define("EP.app.desktop.StatusBar", {
             beep.setVolume(v);
             beep.play();
             this.__soundPointer++;
-            if (this.__soundPointer == 10) {
+            if (this.__soundPointer == 5) {
                 this.__soundPointer = 0;
             }
         },
@@ -51,7 +55,7 @@ qx.Class.define("EP.app.desktop.StatusBar", {
                 var u = qx.util.ResourceManager.getInstance().toUri("EP/sound/6370.mp3");
                 this.__sounds = [];
                 this.__soundPointer = 0;
-                for (var i = 0; i<10 ; i++) {
+                for (var i = 0; i<5 ; i++) {
                     // preload
                     qx.lang.Function.delay(function() {
                         this.__sounds.push(new qx.bom.media.Audio(u));
