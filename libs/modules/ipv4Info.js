@@ -93,7 +93,7 @@ var fetchInfo = function(rec,nextIteration) {
 
 var ipv4Info = function(opts) {
 
-    this.q = require('qjobs')({maxConcurrency:3});
+    this.q = require('qjobs')({maxConcurrency:10});
     this.lastMessage = '';
     this.JM = global.jobManager;
     this.job = this.JM.add(opts,this);
