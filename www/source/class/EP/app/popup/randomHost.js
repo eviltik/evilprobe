@@ -4,9 +4,9 @@ qx.Class.define("EP.app.popup.randomHost", {
 
     events: {
         jobMessage: "qx.event.type.Data",
-        jobStart: "qx.event.type.Data",
-        jobEnd: "qx.event.type.Data",
-        jobAbort: "qx.event.type.Data"
+        jobStart:   "qx.event.type.Data",
+        jobEnd:     "qx.event.type.Data",
+        jobAbort:   "qx.event.type.Data"
     },
 
     construct:function() {
@@ -33,13 +33,22 @@ qx.Class.define("EP.app.popup.randomHost", {
         this.addListener('jobEnd',this.onJobEnd,this);
         this.addListener('jobAbort',this.onJobAbort,this);
 
+        this.addListener('close',this.__onClose,this);
+
+        //this.__indicator = qx.core.Init.getApplication().getIndicator();
+        //this.__indicator.addListener('drop',this.__indicatorDrop,this);
+
         this.add(this.__getContent());
-        this.open();
     },
 
     members:{
 
+        __indicator:null,
         __table :null,
+
+        __onClose:function() {
+            //this.__table.removeListener('drop');
+        },
 
         onJobMessage:function(ev) {
             if (ev.getData().data.job._jobCmd == 'ipv4Info') {
@@ -95,6 +104,7 @@ qx.Class.define("EP.app.popup.randomHost", {
             right.add(this.__getHostList());
             content.add(right,{flex:5});
 
+            /*
             var buttonContainer = new qx.ui.container.Composite();
             buttonContainer.set({
                 layout:new qx.ui.layout.Canvas(0,0),
@@ -103,10 +113,11 @@ qx.Class.define("EP.app.popup.randomHost", {
             });
             buttonContainer.add(this.__getButtonCancel(),{left: 0});
             buttonContainer.add(this.__getButtonOk(),{right: 0});
+            */
 
             v.add(content,{flex:1});
             v.add(new qx.ui.core.Spacer(10));
-            v.add(buttonContainer);
+            //v.add(buttonContainer);
             return v;
         },
 
@@ -242,11 +253,24 @@ qx.Class.define("EP.app.popup.randomHost", {
             });
 
             table.getSelectionModel().addListener('changeSelection',this.__onTableChangeSelection,this);
+
+            table.setDraggable(true);
+            this.setDroppable(false);
+
+            table.addListener('dragstart', this.__itemDragStart,this);
+            //table.addListener('dragover',this.__itemDragOver,this);
+            table.addListener('dragend',this.__itemDragEnd,this);
+            table.addListener('drag',this.__itemDrag,this);
+            table.addListener('drop',this.__itemDrop,this);
+
             this.__tableModel= table.getTableModel();
             return table;
         },
 
         __onTableChangeSelection:function() {
+
+            if (!this.__buttonOk) return;
+
             if (this.__table.getSelectionModel().getSelectedCount()===0) {
                 return this.__buttonOk.setEnabled(false);
             }
@@ -299,9 +323,8 @@ qx.Class.define("EP.app.popup.randomHost", {
 
         __clickButtonGenerate:function() {
             if (this.__checkboxReset.getValue()) {
-                this.__table.getTableModel().setData([]);
+                this.__tableModel.setData([]);
             }
-            this.__tableModel = this.__table.getTableModel();
 
             var job = {};
             job._jobCmd = 'ipv4Random';
@@ -318,7 +341,7 @@ qx.Class.define("EP.app.popup.randomHost", {
 
         __clickButtonInfo:function() {
             var ips = [];
-            this.__ReversedMax = this.__table.getTableModel().getData().length;
+            this.__ReversedMax = this.__tableModel.getData().length;
             this.__Reversed = 0;
             this.__left.setEnabled(false);
 
@@ -340,6 +363,85 @@ qx.Class.define("EP.app.popup.randomHost", {
             qx.core.Init.getApplication().getDesktop().__popupEarth.show();
             qx.event.message.Bus.dispatch(new qx.event.message.Message('mapReset'));
 
+        },
+
+        /* drag & drop */
+
+        __itemDragStart:function(ev) {
+            this.setOpacity(0.5);
+            ev.addAction("move");
+            this.__itemDragging = ev.getOriginalTarget();
+        },
+
+        /*
+        __itemDragOver:function(ev) {
+            console.log('__itemDragOver',ev.getOriginalTarget() instanceof qx.ui.tree.VirtualTreeItem);
+
+            ev.preventDefault();
+
+            // Stop when the dragging comes from outside
+            if (ev.getRelatedTarget()) {
+                ev.preventDefault();
+            }
+        },
+        */
+
+        __itemDrag:function(ev) {
+            var target = ev.getOriginalTarget();
+
+            if (
+                !(target instanceof qx.ui.tree.VirtualTreeItem)
+                &&
+                !(target instanceof qx.ui.virtual.core.Pane)
+            ) {
+                this.__droppedOn = null;
+                return false;
+            }
+
+            if (target.getModel) {
+                var tree = target.getModel().getUserData('tree');
+                if (!tree) return;
+                var model = target.getModel() || null;
+                if (model && model.getType() == 'host') {
+                    var parent = model.getUserData('parent');
+                    model = parent;
+                }
+                tree.setSelection(new qx.data.Array([model]));
+            }
+
+            this.__droppedOn = target;
+        },
+
+        __itemDragEnd:function(ev) {
+            this.setOpacity(1);
+            if (!this.__droppedOn) return;
+
+            var ranges = this.__table.getSelectionModel().getSelectedRanges();
+            var items = [];
+            while (ranges.length) {
+                var r = ranges.shift();
+                while (r.minIndex <= r.maxIndex) {
+                    items.push({
+                        name:this.__tableModel.getValue(0,r.minIndex++),
+                        type:'host'
+                    });
+                }
+            }
+
+            if (!items.length) return;
+
+            ev.getRelatedTarget().fireDataEvent('dropSomething',{
+                parent:this.__droppedOn,
+                items:items
+            });
+        },
+
+        __indicatorDrop:function(ev) {
+            console.log('__indicatorDrop');
+        },
+
+        __itemDrop:function(ev) {
+            console.log('__itemDrop');
         }
     }
 });
