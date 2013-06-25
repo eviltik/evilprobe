@@ -406,15 +406,13 @@ qx.Class.define("EP.app.popup.randomHost", {
                     var parent = model.getUserData('parent');
                     model = parent;
                 }
+                this.__droppedOn = target;
                 tree.setSelection(new qx.data.Array([model]));
             }
-
-            this.__droppedOn = target;
         },
 
         __itemDragEnd:function(ev) {
             this.setOpacity(1);
-            if (!this.__droppedOn) return;
 
             var ranges = this.__table.getSelectionModel().getSelectedRanges();
             var items = [];
