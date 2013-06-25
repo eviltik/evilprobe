@@ -15,10 +15,6 @@ var ipv4Random = function(opts) {
     // arguments are store in 'args' object
     var args = opts.args;
 
-    /*
-     * real code of your job goes here
-     */
-
     var ips = [];
     var i = 0;
     while (i < args.max) {
