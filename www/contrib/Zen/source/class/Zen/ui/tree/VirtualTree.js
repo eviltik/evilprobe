@@ -18,6 +18,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
 
         var nodes = {
             name:'root',
+            norder:'',
             type:'root',
             _id:'null',
             resume:'',
@@ -120,6 +121,26 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             }
         },
 
+        __nodeReorderChilds : function(name,childs) {
+
+            childs.sort(function(a,b) {
+                return ((a.getType() < b.getType()) ? -1 : ((a.getType() > b.getType()) ? 1 : 0));
+            });
+
+
+            childs.sort(function(a,b) {
+                return ((a.getName() < b.getName()) ? -1 : ((a.getName() > b.getName()) ? 1 : 0));
+            });
+
+            childs.sort(function(a,b) {
+                var a = parseInt(a.getNorder());
+                var b = parseInt(b.getNorder());
+
+                if (!isNaN(a) && !isNaN(b)) return a-b;
+                return 0;
+            });
+        },
+
         __configureNode:function(node,parent) {
 
             if (parent) {
@@ -146,29 +167,19 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                 return;
             }
 
-            var children = node.getChilds();
-            if (!children.getLength) {
+            var childs = node.getChilds();
+            if (!childs.getLength) {
                 // no ??
                 return;
             }
 
-            children.sort(function(a,b) {
-                return ((a.getType() < b.getType()) ? -1 : ((a.getType() > b.getType()) ? 1 : 0));
-            });
+            this.__nodeReorderChilds(node.getName(),childs);
 
-            children.sort(function(a,b) {
-                return ((a.getName() < b.getName()) ? -1 : ((a.getName() > b.getName()) ? 1 : 0));
-            });
-
-            children.sort(function(a,b) {
-                return ((a.getLongip() < b.getLongip()) ? -1 : ((a.getLongip() > b.getLongip()) ? 1 : 0));
-            })
-
-            var length = children.getLength();
+            var length = childs.getLength();
 
             // Recursive on childs
             for (var x=0; x < length; x++) {
-                this.__configureNode(children.getItem(x), node);
+                this.__configureNode(childs.getItem(x), node);
             }
         },
 
@@ -403,6 +414,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             var n = qx.data.marshal.Json.createModel(this.extendDataItem({
                 _id:null,
                 name: data.name,
+                norder:'',
                 childs: [],
                 type : data.type,
                 opened:true
@@ -567,14 +579,14 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         },
 
         __nodeUpdated:function(ev) {
-            var data = ev.getData();
-            if (!data.get_id()) {
+            var node = ev.getData();
+            if (!node.get_id()) {
                 return;
             }
 
             var d = {
-                _id:data.get_id(),
-                name:data.getName()
+                _id:node.get_id(),
+                name:node.getName()
             };
 
             new EP.app.util.Xhr(this.getUrl('update'),d,this.__onNodeUpdated,this).send();
@@ -587,6 +599,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         },
 
         __nodeCreated:function(ev) {
+            console.log('__nodeCreated');
             var node = ev.getData();
             var parent = node.getUserData('parent');
             var parentIsRoot = parent.getType() === 'root';
@@ -602,13 +615,27 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             new EP.app.util.Xhr(this.getUrl('create'),d,this.__onNodeCreated,{self:this,node:node}).send();
         },
 
+        __getParent:function(node) {
+            console.log('__getParent');
+            if (!node) return;
+            if (!node.get_id()) return;
+            if (this.__nodeMap) {
+                console.log(node);
+                console.log(this.__nodeMap[node.getParent()].getName());
+                return this.__nodeMap[node.get_id()];
+            }
+            return node;
+        },
+
         __onNodeCreated:function(err,r) {
+            console.log('__onNodeCreated');
             if (!r.ok && r.error) return dialog.Dialog.error(r.error);
             // scope is created node
             this.node.setUserData('saving',false);
             this.node.set_id(r.node._id);
+            this.node.setNorder(r.node.norder);
             this.self.__nodeMap[r.node._id] = this.node;
-            this.self.__configureNode(this.node);
+            this.self.__configureNode(this.node.getUserData('parent'));
         },
 
         __nodeDeleted:function(ev) {

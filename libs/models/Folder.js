@@ -12,7 +12,7 @@ var schema = mongoose.Schema({
         type:String,
         trim:true
     },
-    longip: {
+    norder: {
         type:Number
     },
     opened:     Boolean,
@@ -31,7 +31,7 @@ var schema = mongoose.Schema({
 })
 
 schema.plugin(tree);
-schema.index({name:1,longip:1,data:1,creator:1,workspace:1,path:1,type:1});
+schema.index({name:1,data:1,creator:1,workspace:1,path:1,type:1});
 
 
 /* model */
@@ -50,7 +50,7 @@ Folder.cleanItem = function(item) {
 
 Folder.do.load = function(args,cb) {
     var filters = args.filters||{name:'root'};
-    var columns = args.columns||'_id name path';
+    var columns = args.columns||'_id name norder path';
     var options = args.options||{};
 
     // Needed because options are dynamicaly
@@ -78,19 +78,12 @@ Folder.do.load = function(args,cb) {
                 });
 
                 /*
-                 * sort as been moved client side
+                 * here you can sort things, but it's
+                 * better to make that client side
                  */
                 /*
                 r.sort(function(a,b) {
                     return ((a.type < b.type) ? -1 : ((a.type > b.type) ? 1 : 0));
-                });
-
-                r.sort(function(a,b) {
-                    return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
-                });
-
-                r.sort(function(a,b) {
-                    return ((a.longip < b.longip) ? -1 : ((a.longip > b.longip) ? 1 : 0));
                 });
                 */
             }
@@ -104,8 +97,6 @@ Folder.do.load = function(args,cb) {
         r.forEach(function(f) {
 
             f = JSON.parse(JSON.stringify(f));
-
-            //optionsO.sort = {'type':1,'longip':1,'name':1}
 
             var args = {
                 filters:filters,
@@ -138,9 +129,9 @@ Folder.do.load = function(args,cb) {
 
 Folder.do.create = function(args,cb) {
     if (net.isIPv4(args.name)) {
-        args.longip = cidr.ip2long(args.name);
+        args.norder = cidr.ip2long(args.name);
     } else {
-        args.longip = 0;
+        args.norder = 0;
     }
     var w = new Folder(args);
     w.save(function(err,r) {
@@ -153,9 +144,9 @@ Folder.do.update = function(args,cb) {
     if (!args.fields) return cb('No fields specified');
 
     if (net.isIPv4(args.fields.name)) {
-        args.fields.longip = cidr.ip2long(args.fields.name);
+        args.fields.norder = cidr.ip2long(args.fields.name);
     } else {
-        args.fields.longip = 0;
+        args.fields.norder = 0;
     }
 
     var fields = args.fields;
@@ -207,6 +198,7 @@ Folder.ws.create = function(req,res,next) {
         if (err) throw err;
         var newFolder = {
             name:r.name,
+            norder:r.norder,
             _id:r._id
         }
         if (err) return res.send({error:err});
@@ -223,12 +215,8 @@ Folder.ws.load = function(req,res,next) {
             workspace:req.params.workspaceId,
             parent:null
         },
-        columns:'_id name creator type opened data longip',
-        options:{
-            //sort:{'type':1,'longip':1,'name':1}
-            //sort:{'path':1,'type':1,'name':1,'longip':1}
-            //sort:{'path':1}
-        }
+        columns:'_id name creator type opened data norder',
+        options:{}
     };
 
     if (req.body.filters) {
