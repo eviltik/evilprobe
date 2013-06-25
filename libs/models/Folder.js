@@ -76,6 +76,23 @@ Folder.do.load = function(args,cb) {
                     }
                     r[i] = Folder.cleanItem(item);
                 });
+
+                /*
+                 * sort as been moved client side
+                 */
+                /*
+                r.sort(function(a,b) {
+                    return ((a.type < b.type) ? -1 : ((a.type > b.type) ? 1 : 0));
+                });
+
+                r.sort(function(a,b) {
+                    return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+                });
+
+                r.sort(function(a,b) {
+                    return ((a.longip < b.longip) ? -1 : ((a.longip > b.longip) ? 1 : 0));
+                });
+                */
             }
             return r;
         }
@@ -87,6 +104,8 @@ Folder.do.load = function(args,cb) {
         r.forEach(function(f) {
 
             f = JSON.parse(JSON.stringify(f));
+
+            //optionsO.sort = {'type':1,'longip':1,'name':1}
 
             var args = {
                 filters:filters,
@@ -100,7 +119,7 @@ Folder.do.load = function(args,cb) {
             var ff = new Folder(f);
             ff.getChildrenTree(args,function(err,c) {
                 f.childs = c;
-                fs[this.j]=f;
+                fs[this.j] = f;
                 if (i == r.length-1) {
                     fs = cleanItems(fs);
                     return cb(null,fs);
@@ -204,9 +223,11 @@ Folder.ws.load = function(req,res,next) {
             workspace:req.params.workspaceId,
             parent:null
         },
-        columns:'_id name creator type opened data',
+        columns:'_id name creator type opened data longip',
         options:{
-            sort:{'type':1,'longip':1,'name':1}
+            //sort:{'type':1,'longip':1,'name':1}
+            //sort:{'path':1,'type':1,'name':1,'longip':1}
+            //sort:{'path':1}
         }
     };
 

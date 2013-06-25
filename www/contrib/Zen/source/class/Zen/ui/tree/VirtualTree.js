@@ -152,6 +152,18 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                 return;
             }
 
+            children.sort(function(a,b) {
+                return ((a.getType() < b.getType()) ? -1 : ((a.getType() > b.getType()) ? 1 : 0));
+            });
+
+            children.sort(function(a,b) {
+                return ((a.getName() < b.getName()) ? -1 : ((a.getName() > b.getName()) ? 1 : 0));
+            });
+
+            children.sort(function(a,b) {
+                return ((a.getLongip() < b.getLongip()) ? -1 : ((a.getLongip() > b.getLongip()) ? 1 : 0));
+            })
+
             var length = children.getLength();
 
             // Recursive on childs
@@ -566,6 +578,8 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             };
 
             new EP.app.util.Xhr(this.getUrl('update'),d,this.__onNodeUpdated,this).send();
+            this.self.__configureNode(this.__tm);
+
         },
 
         __onNodeUpdated:function(err,r) {
@@ -594,6 +608,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             this.node.setUserData('saving',false);
             this.node.set_id(r.node._id);
             this.self.__nodeMap[r.node._id] = this.node;
+            this.self.__configureNode(this.node);
         },
 
         __nodeDeleted:function(ev) {
