@@ -782,7 +782,7 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
                     new EP.app.util.Xhr(this.getUrl('move'),d,function(err,res) {
                         this.actualParentNode.getChilds().remove(this.node);
                         this.newParentNode.getChilds().push(this.node);
-                        console.log(this.self.__nodeMap);
+                        //console.log(this.self.__nodeMap);
                         //delete this.self.__nodeMap[this.node.get_id()];
                         if (this.node.setParent) {
                             this.node.setParent(this.dropParentId);
