@@ -78,6 +78,7 @@ var init = function() {
     app.all('/ws/folder/:workspaceId/load',Folder.ws.load);
     app.all('/ws/folder/:workspaceId/create',Folder.ws.create);
     app.all('/ws/folder/:workspaceId/update',Folder.ws.update);
+    app.all('/ws/folder/:workspaceId/move',Folder.ws.move);
     app.all('/ws/folder/:workspaceId/delete',Folder.ws.delete);
     app.all('/ws/folder/:workspaceId/deleteAll',Folder.ws.deleteAll);
     app.all('/ws/folder/:workspaceId/empty',Folder.ws.empty);

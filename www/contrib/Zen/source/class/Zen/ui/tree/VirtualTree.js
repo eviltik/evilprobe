@@ -65,18 +65,17 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         this.addListener('open',this.__nodeOpened,this);
         this.addListener('close',this.__nodeClosed,this);
 
-        this.addListener('dropSomething',this.__dropSomething,this);
+        this.addListener('dropSomething',this.__dropFromOutside,this);
 
-        /* TODO : drag & drop
+        /* TODO : drag & drop */
         this.addListener('dragstart', this.__nodeDragStart,this);
-        this.addListener('dragover',this.__nodeDragOver,this);
+        //this.addListener('dragover',this.__nodeDragOver,this);
         this.addListener('dragend',this.__nodeDragEnd,this);
         this.addListener('drag',this.__nodeDrag,this);
-        this.addListener('drop',this.__nodeDrop,this);
+        //this.addListener('drop',this.__nodeDrop,this);
 
-        this.__indicator = qx.core.Init.getApplication().__desktop.__indicator;
-        this.__indicator.addListener('drop',this.__indicatorDrop,this);
-        */
+        //this.__indicator = qx.core.Init.getApplication().getIndicator();
+        //this.__indicator.addListener('drop',this.__indicatorDrop,this);
 
         this.getSelection().addListener("change", this.__onSelectionChange,this);
 
@@ -482,6 +481,11 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
 
         __nodeEdit:function(node) {
 
+            if (this.getSelection().getLength()>1) {
+                // More than one node is selected, editing not allowed
+                return;
+            }
+
             this.__editing = true;
 
             var item = this.getSelection().getItem(0);
@@ -690,10 +694,8 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
          */
 
         __nodeDragStart:function(ev) {
-            //ev.addType("item")
             ev.addAction("move");
-            this.__nodeDragging = ev.getOriginalTarget();
-            this.setOpacity(0.5);
+            this.__selected = this.getSelection().toArray();
         },
 
         __nodeDragOver:function(ev) {
@@ -705,32 +707,102 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
             if (ev.getRelatedTarget()) {
                 ev.preventDefault();
             }
+            return true;
         },
 
         __nodeDrag:function(ev) {
             var target = ev.getOriginalTarget();
 
-            if (target instanceof qx.ui.tree.VirtualTreeItem) {
-                this.__droppedOn = target;
+            if (!qx.ui.core.Widget.contains(this, target) && this.__indicator && target != this.__indicator) {
+                return false;
             }
 
-            if (!qx.ui.core.Widget.contains(this, target) && target != this.__indicator) {
+            if (target instanceof qx.ui.virtual.core.Pane) {
+                this.__droppedOn = this.__root;
+                console.log('ici');
                 return;
             }
 
-            var origCoords = target.getContentLocation();
+            if (target.getModel && target.getModel()) {
+                var tree = target.getModel().getUserData('tree');
+                if (!tree) return;
+                var model = target.getModel() || null;
+                if (!model) {
+                    this.__droppedOn = null;
+                    return;
+                }
 
-            this.__indicator.setWidth(target.getBounds().width);
-            this.__indicator.setDomPosition(origCoords.left, origCoords.top);
+                if (model.getType() == 'host') {
+                    var model = model.getUserData('parent');
+                    target = model.getUserData('qxnode');
+                }
+                this.__droppedOn = target;
+                tree.setSelection(new qx.data.Array([model]));
+            }
+
+            if (this.__indicator) {
+                var origCoords = target.getContentLocation();
+                this.__indicator.setWidth(target.getBounds().width);
+                this.__indicator.setDomPosition(origCoords.left, origCoords.top);
+            }
         },
 
         __nodeDragEnd:function(ev) {
-            console.log('__nodeDragEnd',ev);
-            var src = this.__nodeDragging.getModel();
-            var dst = this.__droppedOn.getModel();
-            console.log(src.getName()+' has been dropped on '+dst.getName());
+                                    console.log(this.__nodeMap);
 
-            this.__indicator.setDomPosition(-1000, -1000);
+            var newParentNode = this.__tm;
+            if (this.__droppedOn.getModel) {
+                newParentNode = this.__droppedOn.getModel();
+            }
+
+            if (this.__indicator) {
+                this.__indicator.setDomPosition(-1000, -1000);
+            }
+
+            var dropParentId = null;
+            if (newParentNode && newParentNode.get_id) {
+                dropParentId = newParentNode.get_id();
+            }
+
+            for (var i = 0;i<this.__selected.length; i++) {
+                var selectedParent = null;
+                if (this.__selected[i].getParent) {
+                    selectedParent = this.__selected[i].getParent();
+                }
+                if (dropParentId != selectedParent) {
+                    var n = this.__selected[i];
+                    var actualParentNode = this.__tm;
+                    if (n.getParent) {
+                        actualParentNode = this.__nodeMap[n.getParent()];
+                    }
+
+                    var d = {};
+                    d._id = n.get_id();
+                    d.newParentId = dropParentId;
+                    new EP.app.util.Xhr(this.getUrl('move'),d,function(err,res) {
+                        this.actualParentNode.getChilds().remove(this.node);
+                        this.newParentNode.getChilds().push(this.node);
+                        console.log(this.self.__nodeMap);
+                        //delete this.self.__nodeMap[this.node.get_id()];
+                        if (this.node.setParent) {
+                            this.node.setParent(this.dropParentId);
+                        }
+                        if (this.i == this.max) {
+                            this.self.__nodeReorderChilds(null,this.newParentNode.getChilds());
+                            this.self.setSelection(new qx.data.Array(this.self.__selected));
+                        }
+                    },{
+                        actualParentNode:actualParentNode,
+                        newParentNode:newParentNode,
+                        self:this,
+                        node:n,
+                        i:i,
+                        max:this.__selected.length-1,
+                        dropParentId:dropParentId
+                    }).send();
+                }
+
+            }
         },
 
         __indicatorDrop:function(ev) {
@@ -738,9 +810,10 @@ qx.Class.define("Zen.ui.tree.VirtualTree", {
         },
 
         __nodeDrop:function(ev) {
+            console.log('__nodeDrop');
         },
 
-        __dropSomething:function(ev) {
+        __dropFromOutside:function(ev) {
 
             //console.log('__dropSomething');
 

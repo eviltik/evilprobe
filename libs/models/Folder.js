@@ -155,6 +155,17 @@ Folder.do.update = function(args,cb) {
     Folder.update(filters,fields,options,cb||function() {});
 }
 
+Folder.do.move = function(args,cb) {
+    Folder.findOne({_id:args._id},function(err,node) {
+        Folder.findOne({_id:args.parentId},function(err,parent) {
+            node.parent = parent;
+            node.save(function(err,res) {
+                cb(err,res);
+            })
+        })
+    })
+}
+
 Folder.do.delete = function(args,cb) {
     var filters = args.filters||{};
     Folder.remove(filters,cb||function() {});
@@ -257,6 +268,28 @@ Folder.ws.update = function(req,res,next) {
     };
 
     Folder.do.update(args,function(err,affectedRows) {
+        if (affectedRows) return res.send({ok:true,updated:affectedRows});
+        res.send({ok:false,error:err});
+    })
+}
+
+Folder.ws.move = function(req,res,next) {
+    log.debug('Folder.ws.move '+req.params.workspaceId+'/'+JSON.stringify(req.body));
+
+    if (!req.body._id) {
+        return res.send({ok:false,error:'no node id specified'});
+    }
+
+    if (!req.body.newParentId) {
+        return res.send({ok:false,error:'no parent node id specified'});
+    }
+
+    var args = {
+        _id:req.body._id,
+        parentId:req.body.newParentId
+    };
+
+    Folder.do.move(args,function(err,affectedRows) {
         if (affectedRows) return res.send({ok:true,updated:affectedRows});
         res.send({ok:false,error:err});
     })
