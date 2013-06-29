@@ -150,12 +150,6 @@ qx.Class.define("EP.app.folder.Tree", {
             this.__nodeCreate('host');
         },
 
-        __onMenuRandomHost:function() {
-            //CIDR.long2ip(Math.random()*4294967296);
-            var w = new EP.app.popup.randomHost();
-            w.show();
-        },
-
         nodeCreateDefaultValue:function(type) {
             if (type == 'host') return 'New host';
             if (type == 'network') return 'New network';
