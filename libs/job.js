@@ -70,6 +70,7 @@ var get = function(jobUid) {
 
 var update = function(jobUid,args) {
     var j = jobs[jobUid];
+    if (!j) return;
     if (j._timeStart) {
         j._timeElapsed = Date.now() - j._timestart;
     }
@@ -93,15 +94,27 @@ var terminate = function(jobUid,args) {
 var pauseToggle =  function(d) {
     if (!d._jobUid) return log.error(d._jobCmd+' without jobUid '+d._jobUid);
     log.info('< GUI: pauseToggle: '+d._jobCmd+' wanted for job '+d._jobUid);
-    if (global.procs[d._jobUid].kill) {
-        global.procs[d._jobUid].kill('SIGUSR1');
+    var p = global.procs[d._jobUid];
+    if (p.q) {
+        if (p.q.paused) {
+            p.q.pause(false);
+        } else {
+            p.q.pause(true);
+        }
+    } else {
+        log.info('< GUI: pauseToggle: '+d._jobCmd+' wanted for job '+d._jobUid);
+        p.kill('SIGUSR1');
     }
 }
 
 var abort = function(d) {
     if (!d._jobUid) return log.error('Abort without '+d._jobUid);
     log.info('< GUI: abort: '+d._jobCmd+' wanted for job '+d._jobUid);
-    if (global.procs[d._jobUid].kill) {
+    var p = global.procs[d._jobUid];
+    if (p.q) {
+        console.log('ici');
+        p.q.abort();
+    } else {
         global.procs[d._jobUid].kill();
     }
     terminate(d._jobUid);
