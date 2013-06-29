@@ -84,6 +84,7 @@ var update = function(jobUid,args) {
 var terminate = function(jobUid,args) {
 	var now = new Date().getTime();
     var j = jobs[jobUid];
+    if (!j) return;
 	j._status = 'Finished';
     refreshJobs();
 	if (debug) log.debug('terminate #'+jobUid,JSON.stringify(j));
@@ -112,7 +113,6 @@ var abort = function(d) {
     log.info('< GUI: abort: '+d._jobCmd+' wanted for job '+d._jobUid);
     var p = global.procs[d._jobUid];
     if (p.q) {
-        console.log('ici');
         p.q.abort();
     } else {
         global.procs[d._jobUid].kill();

@@ -87,7 +87,8 @@ qx.Class.define("EP.app.popup.randomHost", {
         },
 
         onJobAbort:function(ev) {
-            this.close();
+            this.__table.setEnabled(true);
+            this.__left.setEnabled(true);
         },
 
         __getContent:function() {
@@ -370,7 +371,6 @@ qx.Class.define("EP.app.popup.randomHost", {
         __itemDragStart:function(ev) {
             this.setOpacity(0.5);
             ev.addAction("move");
-            this.__itemDragging = ev.getOriginalTarget();
         },
 
         /*
@@ -413,6 +413,7 @@ qx.Class.define("EP.app.popup.randomHost", {
 
         __itemDragEnd:function(ev) {
             this.setOpacity(1);
+            if (!ev.getRelatedTarget()) return;
 
             var ranges = this.__table.getSelectionModel().getSelectedRanges();
             var items = [];
