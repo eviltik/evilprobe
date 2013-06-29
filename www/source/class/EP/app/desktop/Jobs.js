@@ -4,6 +4,11 @@ qx.Class.define("EP.app.desktop.Jobs", {
 
     construct : function(args) {
         this.base(arguments);
+        this.set({
+            margin:2,
+            padding:2,
+            decorator:'menu'
+        })
         this.setLayout(new qx.ui.layout.VBox);
 
         this.__FM = qx.core.Init.getApplication().getFayeManager();
@@ -77,28 +82,22 @@ qx.Class.define("EP.app.desktop.Jobs", {
             var jobStatus = this.__tableJobs.getTableModel().getRowDataAsMap(focusedRow)['Status'];
 
             if (jobStatus == 'Running') {
-
                 var pause = new qx.ui.menu.Button('Pause');
                 pause.addListener('execute',this.jobPause,this);
-
             } else if (jobStatus == 'Paused'){
-
                 var pause = new qx.ui.menu.Button('Unpause');
                 pause.addListener('execute',this.jobUnpause,this);
-
             } else {
-
                 var pause = new qx.ui.menu.Button('Pause');
                 pause.setEnabled(false);
-
             }
+
             this.__contextMenu.add(pause);
 
             var abort = new qx.ui.menu.Button('Abort');
             abort.addListener('execute',this.jobAbort,this);
             this.__contextMenu.add(abort);
             this.__contextMenu.openAtMouse(ev);
-
             return true;
         },
 
