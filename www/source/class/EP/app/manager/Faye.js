@@ -1,5 +1,5 @@
 /**
- * @lint ignoreUndefined(Faye.Client)
+ * @ignore(Faye.Client)
  */
  qx.Class.define("EP.app.manager.Faye", {
 

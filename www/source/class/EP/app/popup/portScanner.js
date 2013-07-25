@@ -1,5 +1,5 @@
 /**
- * @lint ignoreUndefined(CIDR.get)
+ * @ignore(CIDR.get)
  */
 
  qx.Class.define("EP.app.popup.portScanner", {
