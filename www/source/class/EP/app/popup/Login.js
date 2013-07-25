@@ -96,7 +96,7 @@ qx.Class.define("EP.app.popup.Login", {
             f.add(c);
 
             var c = new qx.ui.container.Composite(new qx.ui.layout.Canvas(0,0));
-            c.setDecorator('group-css');
+            c.setDecorator('group');
             c.setPadding(5);
             c.add(this.__getButtonOk(),{right: 0});
             f.add(new qx.ui.core.Spacer(10));

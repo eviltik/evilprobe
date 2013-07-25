@@ -126,7 +126,7 @@ qx.Class.define("EP.app.popup.randomHost", {
             var left = this.__left = new qx.ui.container.Composite();
             left.set({
                 layout:new qx.ui.layout.VBox(2),
-                decorator:'group-css',
+                decorator:'group',
                 padding:5
             });
             left.add(this.__getNumberOfHostTextfield(),{flex:5});

@@ -45,7 +45,7 @@ qx.Class.define("EP.app.popup.workspaceNew", {
             f.add(h);
 
             var c = new qx.ui.container.Composite(new qx.ui.layout.Canvas(0,0));
-            c.setDecorator('group-css');
+            c.setDecorator('group');
             c.setPadding(5);
             c.add(this.__getButtonCancel(),{left: 0});
             c.add(this.__getButtonOk(),{right: 0});

@@ -47,7 +47,7 @@ qx.Class.define("EP.app.popup.workspaceOpen", {
             var buttonContainer = new qx.ui.container.Composite();
             buttonContainer.set({
                 layout:new qx.ui.layout.Canvas(0,0),
-                decorator:'group-css',
+                decorator:'group',
                 padding:5
             });
             buttonContainer.add(this.__getButtonCancel(),{left: 0});
