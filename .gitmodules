@@ -1,3 +1,6 @@
 [submodule "www/contrib/Dialog"]
 	path = www/contrib/Dialog
 	url = https://github.com/franck34/qx-contrib-Dialog.git
+[submodule "www/contrib/Zen"]
+	path = www/contrib/Zen
+	url = https://github.com/franck34/qxZen
