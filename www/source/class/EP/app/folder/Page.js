@@ -38,6 +38,10 @@
     },
 
     members : {
+        __button : null,
+        __workspaceData : null,
+        __tabViewer : null,
+
         __onContextMenu:function(ev) {
             var contextMenu = new qx.ui.menu.Menu();
 

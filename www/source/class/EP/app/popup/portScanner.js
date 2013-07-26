@@ -35,7 +35,9 @@
     },
 
     members:{
-
+        __parentWidget : null,
+        __meta : null,
+        
         getButtons : function() {
             var c = new qx.ui.container.Composite(new qx.ui.layout.Canvas(0,0)).set({margin:5});
             c.add(this.getButtonCancel(),{left: 0});

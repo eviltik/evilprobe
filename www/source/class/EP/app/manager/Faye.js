@@ -20,6 +20,9 @@
     },
 
     members : {
+        client : null,
+        channels : null,
+        
     	jobsStatusSubscribe : function(cb,caller) {
 			//console.log('subscribe to '+this.channels.jobsStatus);
             if (!this.client) return;

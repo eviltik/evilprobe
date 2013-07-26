@@ -72,8 +72,11 @@ qx.Class.define("EP.app.desktop.Jobs", {
         this.manageJobs();
     },
     members:{
+        __FM : null,
+        __JM : null,
         __contextMenu : null,
-
+        __tableJobs:null,
+        
         __onContextMenu:function(ev) {
             this.__contextMenu.removeAll();
 

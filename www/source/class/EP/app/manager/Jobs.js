@@ -5,12 +5,13 @@ qx.Class.define("EP.app.manager.Jobs", {
     construct : function() {
         this.base(arguments);
         this.__FM = qx.core.Init.getApplication().getFayeManager();
+        this.__jobs = {};
     },
 
     members:{
 
         __FM : null,
-        __jobs : {},
+        __jobs : null,
 
         /* private */
 

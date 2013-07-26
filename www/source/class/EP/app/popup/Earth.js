@@ -11,6 +11,7 @@ qx.Class.define("EP.app.popup.Earth", {
     construct:function() {
 
         this.base(arguments);
+        this.__data = [];
 
     	this.set({
     		contentPadding:0,
@@ -44,7 +45,7 @@ qx.Class.define("EP.app.popup.Earth", {
         __container:null,
         __map:null,
         __projection:null,
-        __data:[],
+        __data:null,
 
         __mini:function() {
             var myScreen = qx.core.Init.getApplication().getRoot().getBounds();

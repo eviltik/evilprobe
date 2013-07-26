@@ -67,6 +67,10 @@ qx.Class.define("EP.app.desktop.Desktop", {
     },
 
     members:{
-
+        __menu : null,
+        __jobsList : null,
+        __tabViewer : null,
+        __statusBar : null,
+        __popupEarth : null
     }
 });

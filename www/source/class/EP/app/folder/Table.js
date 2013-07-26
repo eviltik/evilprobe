@@ -7,6 +7,7 @@
     },
 
     construct:function(workspaceData,tree) {
+        this.__data = [];
         this.__workspaceData = workspaceData;
         this.__tree = tree;
 
@@ -45,16 +46,17 @@
 
     members: {
         __table:null,
-        __data:[],
+        __data:null,
 
         refreshDatastoreRecursive:function(node,parent) {
             if (!node) return;
             if (!node.getChilds) return;
             if (!node.getChilds()) return;
-            if (parent && parent.getType() == 'host') {
+
+            if (node && node.getType() == 'host') {
                 this.__data.push([
                     '',
-                    parent.getName(),
+                    node.getName(),
                     parent.getData().getHostname()||'N/A',
                     node.getName(),
                     node.getData().getBanner()||'',
@@ -62,19 +64,23 @@
                     parent.getData().getCity()
                 ])
             }
+
             for (var i = 0;i<node.getChilds().getLength();i++) {
                 this.refreshDatastoreRecursive(node.getChilds().getItem(i),node);
             }
+
             if (!parent) {
                 this.__table.getTableModel().setData(this.__data);
             }
         },
 
         onTreeSelectionChange:function(ev) {
-            //console.log(ev.getData());
+            return;
             this.__data = [];
             this.__table.getTableModel().setData([]);
-            this.refreshDatastoreRecursive(ev.getData(),null)
+            for (var i = 0; i<ev.getData().getLength();i++) {
+                this.refreshDatastoreRecursive(ev.getData().getItem(i),null);
+            }
         }
     }
 

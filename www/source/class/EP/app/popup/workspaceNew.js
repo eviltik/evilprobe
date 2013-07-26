@@ -6,6 +6,9 @@ qx.Class.define("EP.app.popup.workspaceNew", {
 
         this.base(arguments);
 
+        this.__data = {};
+        this.__previousWorkspaceName = '';
+
     	this.set({
     		contentPadding:5,
     		resizable:false,
@@ -27,13 +30,13 @@ qx.Class.define("EP.app.popup.workspaceNew", {
     },
 
     members:{
-        __data:{},
+        __data:null,
         __inputWorkspaceName:null,
         __form:null,
         __labelResponse:null,
         __buttonOk:null,
         __buttonCancel:null,
-        __previousWorkspaceName:'',
+        __previousWorkspaceName:null,
 
         __getForm:function() {
             var f = new qx.ui.container.Composite();

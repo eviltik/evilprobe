@@ -12,10 +12,13 @@ qx.Class.define("EP.app.desktop.Workspaces", {
 
         // Add a welcome page
 
-        var page = new qx.ui.tabview.Page("Welcome");
-        page.setLayout(new qx.ui.layout.VBox());
-        page.setShowCloseButton(false);
-        this.add(page);
+        var welcomePage = new qx.ui.tabview.Page("Welcome");
+        welcomePage.setLayout(new qx.ui.layout.VBox());
+        welcomePage.setShowCloseButton(false);
+        this.add(welcomePage);
+
+        //var page = new Zen.page.editor();
+        //welcomePage.add(page);
 
         // Subscribe global Evilprobe events
 
@@ -23,6 +26,7 @@ qx.Class.define("EP.app.desktop.Workspaces", {
         qx.event.message.Bus.subscribe('workspaceSearchAndOpen',this.__workspaceSearchAndOpen,this);
         // Let's load workspaces for the user
 
+        this.__loaded = false;
         this.workspacesLoad();
     },
 
@@ -32,7 +36,7 @@ qx.Class.define("EP.app.desktop.Workspaces", {
         /* private members */
         /*******************/
 
-        __loaded:false,
+        __loaded:null,
 
         __tabAdd:function(workspaceData,forceSelection) {
 
