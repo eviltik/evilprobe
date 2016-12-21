@@ -1,9 +1,7 @@
 evilprobe
 =========
 
-A Network Security Tool, work in progress.
-
-I'm evil. Something huge is coming. Stay tuned. Really.
+Supposed to be a never ending Network Security Tool. Lol.
 
 
 ===========
